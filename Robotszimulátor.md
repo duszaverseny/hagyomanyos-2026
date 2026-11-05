@@ -1,496 +1,691 @@
-**I. forduló (Hagyományos verseny)	2026\. november 6-8.**  
+*Dusza Árpád Országos Programozói Emlékverseny 2026/2027*
+
+**I. forduló (Hagyományos verseny) 2026. november 6-8.**
+
 Egy régi, elhagyott bánya mélyén labirintusként kanyarognak a kamrák. A bányászok egykor sietve hagyták el őket, és a sötétben ma is csillogó aranyrögök várják, hogy valaki rájuk leljen. A bánya azonban nem kegyelmez, és egyetlen rossz lépés után már a fal állja az utat. A kincseket csak egy acélból kovácsolt felfedező, a kincskereső robot szerezheti meg. Sorról sorra hajtja végre a neki írt parancsokat: a sötétben csak azt érzékeli, ami közvetlenül előtte van, így tapogatózva halad előre, és ahol aranyra bukkan, ott kibányássza a rögöt. De a robot csak annyit tud, amennyit a programja elárul neki, és egyetlen elrontott utasítás elég ahhoz, hogy falnak menjen.
 
 A feladatotok egy olyan fejlesztői környezet (IDE) elkészítése, amelyben egy speciális programnyelven (MineScriptben) megírt program alapján vezérelhető a robot a megadott labirintusban. A fejlesztői környezetnek lehetőséget kell biztosítania a program átszerkesztésére, futtatására és akár soronkénti nyomkövetésére is, valamint a futás lépéseinek naplózására egy kimeneti fájlba. A környezet részét képezi egy robot szimulátor is, amely a labirintusban megjeleníti a robot mozgását, az általa felfedezett területet és a megtalált aranyat, és segítségével a robot manuálisan is irányítható.
 
-# **1\. Az alkalmazás bemenete**
+# 1. Az alkalmazás bemenete
 
-Az alkalmazás indulásakor két paramétert vár. Első paraméterként az input fájl nevét kell megadni, második paraméterként pedig a naplófájl nevét. 
+Az alkalmazás indulásakor két paramétert vár. Első paraméterként az input fájl nevét kell megadni, második paraméterként pedig a naplófájl nevét.
 
-Például, ha az alkalmazásotok lefordított, futtatható fájljának neve robot.exe, akkor a:
+Például, ha az alkalmazásotok lefordított, futtatható fájljának neve `robot.exe`, akkor a:
 
-robot.exe input\_001.txt output\_001.txt
+```sh
+robot.exe input_001.txt output_001.txt
+```
 
-utasítás hatására az alkalmazásotok olvassa be az input\_001.txt állományt, majd ezután kezdje el az igazi működését a fejlesztői környezet. A naplófájl neve output\_001.txt lesz, aminek pontos létrehozásáról a naplózásról szóló fejezetben lesz szó.
+utasítás hatására az alkalmazásotok olvassa be az `input_001.txt` állományt, majd ezután kezdje el az igazi működését a fejlesztői környezet. A naplófájl neve `output_001.txt` lesz, aminek pontos létrehozásáról a naplózásról szóló fejezetben lesz szó.
 
 Az alkalmazás ún. csendes üzemmódban is elindítható három paraméter megadásával az alábbi módon:
 
-robot.exe \-q input\_001.txt output\_001.txt
+```sh
+robot.exe -q input_001.txt output_001.txt
+```
 
-Első paraméterként tehát egy plusz kapcsoló (\-q) kerül megadásra. Ilyenkor a programotoknak automatikusan \- külön felhasználói interakció nélkül \- fel kell dolgoznia a megadott bemeneti állományt és közben a naplófájlt ki kell írnia. A naplófájl kiírása után \- felhasználói interakció nélkül \- a program automatikusan kilép. 
+Első paraméterként tehát egy plusz kapcsoló (`-q`) kerül megadásra. Ilyenkor a programotoknak automatikusan - külön felhasználói interakció nélkül - fel kell dolgoznia a megadott bemeneti állományt és közben a naplófájlt ki kell írnia. A naplófájl kiírása után - felhasználói interakció nélkül - a program automatikusan kilép.
 
-Az input fájl tartalmaz egy térképet és utána egy MineScriptben megírt programkódot, ez irányítja a robotot. 
+Az input fájl tartalmaz egy térképet és utána egy MineScriptben megírt programkódot, ez irányítja a robotot.
 
-Példa: 
+Példa:
 
-3 15  
-....@..........  
-.\#\#\#\#\#\#\#\#\#\#\#\#\#.  
-.......@...\>...  
-set arany to isThere 2  
+```text
+3 15
+....@..........
+.#############.
+.......@...>...
+set arany to isThere 2
 print arany
+```
 
 A fájl első sorában a térkép kiterjedése található, egy szóközzel van elválasztva a két dimenzió. (Mindkét dimenzió legalább 1, maximum 15.) A példában 3 sorból és 15 oszlopból áll a térkép. A térképen szereplő szimbólumok jelentése:
 
-* a . üres kamra, amiben épp nem található se a robot, se aranyrög,  
-* a @ olyan kamra, amelyben aranyrög található,  
-* a \# a fal, ami áthatolhatatlan kőzet,  
-* míg a \>, \<, ^, v szimbólumok a robotot jelölik (a térképen pontosan egy robot van). A robot egy aranyrögöt nem tartalmazó kamrában áll, a szimbólum pedig a robot irányát is megadja, vagyis azt, hogy a négy égtáj közül merre néz: \> kelet, \< nyugat, ^ észak, v dél. A példában szereplő \> tehát azt jelenti, hogy a robot épp kelet felé néz.
+- a `.` üres kamra, amiben épp nem található se a robot, se aranyrög,
 
-A térkép után azonnal következnek a robotot irányító program utasításai. (A program lehet üres is.) 
+- a `@` olyan kamra, amelyben aranyrög található,
+
+- a `#` a fal, ami áthatolhatatlan kőzet,
+
+- míg a `>`, `<`, `^`, `v` szimbólumok a robotot jelölik (a térképen pontosan egy robot van). A robot egy aranyrögöt nem tartalmazó kamrában áll, a szimbólum pedig a robot irányát is megadja, vagyis azt, hogy a négy égtáj közül merre néz: `>` kelet, `<` nyugat, `^` észak, `v` dél. A példában szereplő `>` tehát azt jelenti, hogy a robot épp kelet felé néz.
+
+A térkép után azonnal következnek a robotot irányító program utasításai. (A program lehet üres is.)
 
 A példaprogram működése:
 
-* Az isThere x függvény hívása logikai értékkel (true/false) tér vissza aszerint, hogy a robot előtti mezőn az x paraméternek megfelelő objektum található-e: 0 esetén üres kamra, 1 esetén fal, 2 esetén aranyrög.  
-* az isThere 2 tehát megvizsgálja, hogy a robot előtti mezőn aranyrög van-e,  
-* ennek az eredményét (logikai érték) az arany nevű változóba helyezi el,  
-* majd kiírja a konzolra az arany változó értékét.
+- Az `isThere x` függvény hívása logikai értékkel (`true`/`false`) tér vissza aszerint, hogy a robot előtti mezőn az `x` paraméternek megfelelő objektum található-e: `0` esetén üres kamra, `1` esetén fal, `2` esetén aranyrög.
 
-A bemeneti fájl formátuma mindig helyes, így nem kell arra készülnötök, hogy formai hiba lenne benne. 
+- az `isThere 2` tehát megvizsgálja, hogy a robot előtti mezőn aranyrög van-e,
 
-# **2\. A szöveges forráskód nyelvtana**
+- ennek az eredményét (logikai érték) az `arany` nevű változóba helyezi el,
+
+- majd kiírja a konzolra az `arany` változó értékét.
+
+A bemeneti fájl formátuma mindig helyes, így nem kell arra készülnötök, hogy formai hiba lenne benne.
+
+# 2. A szöveges forráskód nyelvtana
 
 Tekintsük az alábbi programot, ami addig vezeti a robotot előre, amíg az falba nem ütközik. Útközben a robot minden aranyrögöt kibányász, majd a program a futása végén kiírja, mennyi aranyrögöt bányászott ki.
 
-set count to 0  
-set fal to isThere 1  
-set megy to not fal  
-while megy  
-  set arany to isThere 2  
-  if arany  
-    step forward 1  
-    mine here  
-    set count to count \+ 1  
-  else  
-    step forward 1  
-  set fal to isThere 1  
-  set megy to not fal  
+```minescript
+set count to 0
+set fal to isThere 1
+set megy to not fal
+while megy
+  set arany to isThere 2
+  if arany
+    step forward 1
+    mine here
+    set count to count + 1
+  else
+    step forward 1
+  set fal to isThere 1
+  set megy to not fal
 print count
+```
 
-Az EBNF (Extended Backus-Naur Form) egy formális jelölésrendszer, amellyel egy nyelv nyelvtana – vagyis az érvényes szerkezetek felépítése – tömören leírható: megadja, hogy az egyes elemek (tokenek, azaz a nyelv legkisebb önálló egységei, pl. kulcsszavak, azonosítók, számok) milyen sorrendben és milyen ismétlődéssel állhatnak össze. 
+Az EBNF (Extended Backus-Naur Form) egy formális jelölésrendszer, amellyel egy nyelv nyelvtana – vagyis az érvényes szerkezetek felépítése – tömören leírható: megadja, hogy az egyes elemek (tokenek, azaz a nyelv legkisebb önálló egységei, pl. kulcsszavak, azonosítók, számok) milyen sorrendben és milyen ismétlődéssel állhatnak össze.
 
-Egy MineScript nyelven írt program a következő EBNF-jelöléssel definiálható: 
+Egy MineScript nyelven írt program a következő EBNF-jelöléssel definiálható:
 
-programme     \= { command }
+```ebnf
+programme     = { command }
 
-command       \= procedure \| set  
-              \| if \| ifelse \| while
+command       = procedure | set
+              | if | ifelse | while
 
-procedure     \= step \| turn \| mine \| print  
-function      \= isThere
+procedure     = step | turn | mine | print
+function      = isThere
 
-step          \= "step" "forward" simpleval  
-turn          \= "turn" "by" simpleval  
-mine          \= "mine" "here"  
-print         \= "print" simpleval
+step          = "step" "forward" simpleval
+turn          = "turn" "by" simpleval
+mine          = "mine" "here"
+print         = "print" simpleval
 
-isThere       \= "isThere" simpleval
+isThere       = "isThere" simpleval
 
-set           \= "set" ident "to" calculatedval  
-if            \= "if" simpleval block  
-ifelse        \= "if" simpleval block "else" block  
-while         \= "while" simpleval block
+set           = "set" ident "to" calculatedval
+if            = "if" simpleval block
+ifelse        = "if" simpleval block "else" block
+while         = "while" simpleval block
 
-block         \= { command }
+block         = { command }
 
-calculatedval \= simpleval  
-              \| function  
-              \| binop  
-              \| unop
+calculatedval = simpleval
+              | function
+              | binop
+              | unop
 
-binop         \= simpleval binoperator simpleval  
-unop          \= unoperator simpleval
+binop         = simpleval binoperator simpleval
+unop          = unoperator simpleval
 
-simpleval     \= ident \| number \| boolean-lit
+simpleval     = ident | number | boolean-lit
 
-binoperator   \= "+" \| "-" \| "\*"    
-              \| "=" \| "\<\>" \| "\<" \| "\<=" \| "\>" \| "\>="  
-              \| "and" \| "or"  
-unoperator    \= "not"
+binoperator   = "+" | "-" | "*"
+              | "=" | "<>" | "<" | "<=" | ">" | ">="
+              | "and" | "or"
+unoperator    = "not"
 
-boolean-lit   \= "true" \| "false"  
-ident         \= letter { letter \| digit }  
-number        \= digit { digit }
+boolean-lit   = "true" | "false"
+ident         = letter { letter | digit }
+number        = digit { digit }
 
-letter        \= "a".."z" \| "A".."Z"  
-digit         \= "0".."9"
+letter        = "a".."z" | "A".."Z"
+digit         = "0".."9"
+```
 
-A kulcsszavak és az azonosítók is kis- és nagybetűérzékenyek: a kulcsszavakat pontosan a nyelvtanban megadott alakban kell írni (pl. isThere, nem isthere), az arany és az Arany pedig két különböző változó. A kódban szereplő egész számok 0 és 100 közöttiek lehetnek.
+A kulcsszavak és az azonosítók is kis- és nagybetűérzékenyek: a kulcsszavakat pontosan a nyelvtanban megadott alakban kell írni (pl. `isThere`, nem `isthere`), az `arany` és az `Arany` pedig két különböző változó. A kódban szereplő egész számok 0 és 100 közöttiek lehetnek.
 
-Az azonosítók (ident) nem lehetnek kulcsszavak, azaz az alábbi szavak egyike sem (semmilyen kis- vagy nagybetűs kombinációban): and, by, else, false, forward, here, if, isThere, mine, not, or, print, set, step, to, true, turn, while.
+Az azonosítók (`ident`) nem lehetnek kulcsszavak, azaz az alábbi szavak egyike sem (semmilyen kis- vagy nagybetűs kombinációban): `and, by, else, false, forward, here, if, isThere, mine, not, or, print, set, step, to, true, turn, while`.
 
-## **2.1 Soronkénti feldolgozás / tokenizálás**
+## 2.1 Soronkénti feldolgozás / tokenizálás
 
-A forráskód tehát tokenekből épül fel, ezek a program legkisebb, önálló jelentéssel bíró egységei: a kulcsszavak (pl. set), a logikai értékek (pl. true), az operátorok (pl. \+), az azonosítók (változónevek) és a számok. Amennyiben egy szöveges állományból szeretnénk feldolgozni a forráskódot, az EBNF-jelölés önmagában még nem elegendő, mert először a szövegben kell tudni helyesen beazonosítani a tokeneket. Szerencsére ez a folyamat nem bonyolult, és az alábbi algoritmus mentén elvégezhető: 
+A forráskód tehát tokenekből épül fel, ezek a program legkisebb, önálló jelentéssel bíró egységei: a kulcsszavak (pl. `set`), a logikai értékek (pl. `true`), az operátorok (pl. `+`), az azonosítók (változónevek) és a számok. Amennyiben egy szöveges állományból szeretnénk feldolgozni a forráskódot, az EBNF-jelölés önmagában még nem elegendő, mert először a szövegben kell tudni helyesen beazonosítani a tokeneket. Szerencsére ez a folyamat nem bonyolult, és az alábbi algoritmus mentén elvégezhető:
 
-1. **Sorokra bontás.** Minden sor egy utasítás, nincs külön pontosvessző vagy más elválasztó. A sor eleji behúzás adja a szintet, aminek egy szinten belül egységesnek kell lennie. (Ennek egyezőségét nem kell ellenőrizni, feltételezhetitek, hogy a beolvasott forráskódban így szerepel.) A behúzás jelöli, mi tartozik egy if/while törzséhez; amint csökken, a törzs lezárul. Az else az if törzsével azonos behúzáson van. A behúzás csak szóközzel jelölhető (tab nem használható). A különböző blokkok esetén más és más lehet a behúzás mértéke (de a blokkon belül egységes).  
-2. **Tokenizálás.** A behúzás után a sort szóközök mentén daraboljuk tokenekre. Pontosan egy szóköz szerepel az egy soron belüli tokenek között, kivéve a sor elejét; ott \- az előző pontban leírtak szerint \- a behúzásnak megfelelően vannak a szóközök.  
-3. **A sor értelmezése.** Az első token adja meg, milyen utasításról van szó (step, turn, mine, print, set, if, else, while). Az utasítás kötelező kulcsszavai rögzítettek (step forward …, turn by …, mine here, while …, set … to …), a nem rögzített tokenek pedig simpleval\-ok.  
-4. Nincs beágyazott kifejezés, nincs rekurzió: minden simpleval egyetlen token. Ezért elég a sorolvasás és a szódarabolás.  
-5. A forráskód nem tartalmaz utasítás nélküli \- azaz üres \- sorokat. (És ezt nem szükséges ellenőrizni sem.)
+1.  **Sorokra bontás.** Minden sor egy utasítás, nincs külön pontosvessző vagy más elválasztó. A sor eleji behúzás adja a szintet, aminek egy szinten belül egységesnek kell lennie. (Ennek egyezőségét nem kell ellenőrizni, feltételezhetitek, hogy a beolvasott forráskódban így szerepel.) A behúzás jelöli, mi tartozik egy `if`/`while` törzséhez; amint csökken, a törzs lezárul. Az `else` az `if` törzsével azonos behúzáson van. A behúzás csak szóközzel jelölhető (tab nem használható). A különböző blokkok esetén más és más lehet a behúzás mértéke (de a blokkon belül egységes).
+
+2.  **Tokenizálás.** A behúzás után a sort szóközök mentén daraboljuk tokenekre. Pontosan egy szóköz szerepel az egy soron belüli tokenek között, kivéve a sor elejét; ott - az előző pontban leírtak szerint - a behúzásnak megfelelően vannak a szóközök.
+
+3.  **A sor értelmezése.** Az első token adja meg, milyen utasításról van szó (`step`, `turn`, `mine`, `print`, `set`, `if`, `else`, `while`). Az utasítás kötelező kulcsszavai rögzítettek (`step forward …`, `turn by …`, `mine here`, `while …`, `set … to …`), a nem rögzített tokenek pedig `simpleval`-ok.
+
+4.  Nincs beágyazott kifejezés, nincs rekurzió: minden `simpleval` egyetlen token. Ezért elég a sorolvasás és a szódarabolás.
+
+5.  A forráskód nem tartalmaz utasítás nélküli - azaz üres - sorokat. (És ezt nem szükséges ellenőrizni sem.)
 
 Feltételezhetitek, hogy a beolvasandó forráskód ezen algoritmus alapján hiba nélkül tokenizálható.
 
-## **2.2 Szemantikai szabályok**
+## 2.2 Szemantikai szabályok
 
-Míg a nyelvtan (EBNF) csak a program struktúráját írja le, addig az ún. szemantikai szabályok a jelentését és a végrehajtás közbeni elvárásokat rögzítik. Azaz a szemantikai szabályok azt határozzák meg, hogy a szintaktikailag helyes program hogyan viselkedik futás közben: mit jelentenek az egyes utasítások, milyen típusokkal dolgozhatunk, és mikor számít egy program hibásnak. 
+Míg a nyelvtan (EBNF) csak a program struktúráját írja le, addig az ún. szemantikai szabályok a jelentését és a végrehajtás közbeni elvárásokat rögzítik. Azaz a szemantikai szabályok azt határozzák meg, hogy a szintaktikailag helyes program hogyan viselkedik futás közben: mit jelentenek az egyes utasítások, milyen típusokkal dolgozhatunk, és mikor számít egy program hibásnak.
 
 Számos szemantikai szabály tartozik a MineScript nyelvhez, amelyek rendeltetésük szerint csoportosíthatóak.
 
-### **2.2.1 Kulcsszavak működése**
+### 2.2.1 Kulcsszavak működése
 
-* **Aritmetika** (\+ \- \*): egész operandusok, egész eredmény.  
-* **Összehasonlítás** (\< \<= \> \>=): egész operandusok, logikai eredmény.  
-* **Egyenlőségvizsgálat** (\= \<\>): egész és logikai operandusokra is működik, de mindkét operandusnak azonos típusúnak kell lennie (mindkettő egész vagy mindkettő logikai). Az eredmény logikai.  
-* **Logika** (and, or, not): logikai operandusok, logikai eredmény.  
-* set: a set x to ertek utasítás először megpróbálja kiértékelni a to utáni kifejezést, majd siker esetén az eredményt az x nevű változóba írja. Ha az x még nem létezik, az első értékadásnál jön létre, és az érték típusa lesz a változó végleges típusa. Ha már létezik, az új értéknek azonos típusúnak kell lennie a korábbival. A to utáni rész (calculatedval) kiértékelése balról jobbra történik: ha művelet áll benne, annak operandusait egyenként olvassa be, és mindegyiket azonnal ellenőrzi, hogy a típusa megfelel-e a műveletnek, mielőtt a következőre lépne. Az első hibánál a kiértékelés megáll. Ha az eredmény már az első operandusból következne (pl. set x \= true or c), a másodikat akkor is beolvassa. Az \= és a \<\> első operandusa bármilyen típusú lehet, náluk a két típus egyezését a második operandus beolvasása után ellenőrzi.  
-* if**:** a feltétel szerint a then\- vagy (ha van) az else\-ág fut.  
-* while**:** a törzs addig ismétlődik, amíg a logikai feltétel igaz.
+- **Aritmetika** (`+ - *`): egész operandusok, egész eredmény.
 
-### **2.2.2 A nyelv alapszabályai**
+- **Összehasonlítás** (`< <= > >=`): egész operandusok, logikai eredmény.
 
-* **Két típus:** egész (integer) és logikai (boolean), köztük nincs implicit konverzió.  
-* **Nincs változódeklaráció:** a változó az első set\-kor jön létre, és a program végrehajtásának végéig él.  
-* **Típusrögzítés:** a változó típusa az első értékadáskor véglegesen rögzül, később nem változtatható.  
-* **Feltétel:** az if és a while feltétele logikai kell legyen;   
-* **Minden típusellenőrzés futásidőben** történik, nincs fordítás előtti ellenőrzés.  
-* **Végrehajtás:** a sorok fentről lefelé, szekvenciálisan futnak; a blokk az azonos mélységbe behúzott sorokból áll.
+- **Egyenlőségvizsgálat** (`= <>`): egész és logikai operandusokra is működik, de mindkét operandusnak azonos típusúnak kell lennie (mindkettő egész vagy mindkettő logikai). Az eredmény logikai.
 
-### **2.2.3 Robot API**
+- **Logika** (`and`, `or`, `not`): logikai operandusok, logikai eredmény.
+
+- `set`: a `set x to ertek` utasítás először megpróbálja kiértékelni a `to` utáni kifejezést, majd siker esetén az eredményt az `x` nevű változóba írja. Ha az `x` még nem létezik, az első értékadásnál jön létre, és az érték típusa lesz a változó végleges típusa. Ha már létezik, az új értéknek azonos típusúnak kell lennie a korábbival. A `to` utáni rész (`calculatedval`) kiértékelése balról jobbra történik: ha művelet áll benne, annak operandusait egyenként olvassa be, és mindegyiket azonnal ellenőrzi, hogy a típusa megfelel-e a műveletnek, mielőtt a következőre lépne. Az első hibánál a kiértékelés megáll. Ha az eredmény már az első operandusból következne (pl. `set x = true or c`), a másodikat akkor is beolvassa. Az `=` és a `<>` első operandusa bármilyen típusú lehet, náluk a két típus egyezését a második operandus beolvasása után ellenőrzi.
+
+- `if`: a feltétel szerint a `then`- vagy (ha van) az `else`-ág fut.
+
+- `while`: a törzs addig ismétlődik, amíg a logikai feltétel igaz.
+
+### 2.2.2 A nyelv alapszabályai
+
+- **Két típus:** egész (integer) és logikai (boolean), köztük nincs implicit konverzió.
+
+- **Nincs változódeklaráció:** a változó az első `set`-kor jön létre, és a program végrehajtásának végéig él.
+
+- **Típusrögzítés:** a változó típusa az első értékadáskor véglegesen rögzül, később nem változtatható.
+
+- **Feltétel:** az `if` és a `while` feltétele logikai kell legyen;
+
+- **Minden típusellenőrzés futásidőben** történik, nincs fordítás előtti ellenőrzés.
+
+- **Végrehajtás:** a sorok fentről lefelé, szekvenciálisan futnak; a blokk az azonos mélységbe behúzott sorokból áll.
+
+### 2.2.3 Robot API
 
 A robot vezérlése a robot API meghívásán keresztül lehetséges. Az egyes API-végpontok natívan a MineScript nyelv részét alkotják.
 
-* step forward n: a robot egyetlen hívással n egységet halad előre (n nemnegatív egész), közben a köztes mezőket is érintve. Ha olyan mezőt érint, ahol aranyrög található, ott hagyja.  
-* turn by n: az n értéke nemnegatív. A robot n negyedfordulatot lép balra (azaz az óramutató járásával ellentétes irányba). 0 esetén a robot iránya nem változik.  
-* mine here: a robot a mezőn, amelyen áll, kibányássza az aranyrögöt, ezután már ezen a mezőn nem lesz több bányászható arany;   
-* isThere w: a robot előtt lévő mező fajtáját ellenőrzi: a w paraméter (0 \= üres kamra, 1 \= fal, 2 \= aranyrög) alapján logikai értékkel tér vissza (true/false). Amennyiben a robot vizsgálódása a térkép szélét meghaladja, azt falnak tekinti és ekképpen tér vissza a megfelelő isThere hívásra.  
-* print x: kiírja az egész vagy logikai értéket a konzolra.
+- `step forward n`: a robot egyetlen hívással `n` egységet halad előre (`n` nemnegatív egész), közben a köztes mezőket is érintve. Ha olyan mezőt érint, ahol aranyrög található, ott hagyja.
 
-(Az n, w és x paraméter \- a nyelvtan alapján \- mind simpleval kifejezés.)
+- `turn by n`: az `n` értéke nemnegatív. A robot `n` negyedfordulatot lép balra (azaz az óramutató járásával ellentétes irányba). `0` esetén a robot iránya nem változik.
 
-### **2.2.4 Futásidejű hibák**
+- `mine here`: a robot a mezőn, amelyen áll, kibányássza az aranyrögöt, ezután már ezen a mezőn nem lesz több bányászható arany;
+
+- `isThere w`: a robot előtt lévő mező fajtáját ellenőrzi: a `w` paraméter (`0` = üres kamra, `1` = fal, `2` = aranyrög) alapján logikai értékkel tér vissza (`true`/`false`). Amennyiben a robot vizsgálódása a térkép szélét meghaladja, azt falnak tekinti és ekképpen tér vissza a megfelelő `isThere` hívásra.
+
+- `print x`: kiírja az egész vagy logikai értéket a konzolra.
+
+(Az `n`, `w` és `x` paraméter - a nyelvtan alapján - mind `simpleval` kifejezés.)
+
+### 2.2.4 Futásidejű hibák
 
 A program **végrehajtása során** az alábbi hibák következhetnek be, amiket az alkalmazásotoknak kezelnie szükséges:
 
-* **Típust váltó értékadás** **(**hibakód**:** E\_TYPE\_MISMATCH): egy már rögzített típusú változóhoz eltérő típusú értéket rendelsz.  
-* **Nem-inicializált változó olvasása** **(**hibakód**:** E\_UNINITIALIZED): érték hozzárendelése előtt hivatkozol egy változóra.  
-* **Nem-logikai feltétel** **(**hibakód**:** E\_NON\_BOOL\_CONDITION): az if vagy while feltétele nem logikai (pl. egész).  
-* **Rossz operandustípus** **(**hibakód**:** E\_BAD\_OPERAND): aritmetikai (\+ \- \*) vagy összehasonlító (\< \<= \> \>=) művelet nem egész operandussal, logikai művelet (and, or, not) nem logikai operandussal, illetve egyenlőségvizsgálat (\= \<\>) két különböző típusú operandussal.  
-* **Falra lépés vagy lelépés a térképről (**hibakód**:** E\_BEDROCK\_HIT): step forward a soron következő lépésnél falra vezetne vagy lelépne a térképről.  
-* **Bányászás arany nélkül (**hibakód**:** E\_NO\_GOLD): mine here olyan mezőn, ahol nincs vagy nincs már arany.  
-* **Érvénytelen paraméter (hibakód:** E\_BAD\_ARG**)**: egy API-hívás a megengedett tartományon kívüli paraméterrel vagy rossz típusú paraméterrel hívódik meg. Pl. isThere w, ahol w nem a 0, 1 vagy 2 értékek egyike, vagy turn by true.
+- **Típust váltó értékadás** (hibakód: `E_TYPE_MISMATCH`): egy már rögzített típusú változóhoz eltérő típusú értéket rendelsz.
+
+- **Nem-inicializált változó olvasása** (hibakód: `E_UNINITIALIZED`): érték hozzárendelése előtt hivatkozol egy változóra.
+
+- **Nem-logikai feltétel** (hibakód: `E_NON_BOOL_CONDITION`): az `if` vagy `while` feltétele nem logikai (pl. egész).
+
+- **Rossz operandustípus** (hibakód: `E_BAD_OPERAND`): aritmetikai (`+ - *`) vagy összehasonlító (`< <= > >=`) művelet nem egész operandussal, logikai művelet (`and, or, not`) nem logikai operandussal, illetve egyenlőségvizsgálat (`= <>`) két különböző típusú operandussal.
+
+- **Falra lépés vagy lelépés a térképről** (hibakód: `E_BEDROCK_HIT`): `step forward` a soron következő lépésnél falra vezetne vagy lelépne a térképről.
+
+- **Bányászás arany nélkül** (hibakód: `E_NO_GOLD`): `mine here` olyan mezőn, ahol nincs vagy nincs már arany.
+
+- **Érvénytelen paraméter** (hibakód: `E_BAD_ARG`): egy API-hívás a megengedett tartományon kívüli paraméterrel vagy rossz típusú paraméterrel hívódik meg. Pl. `isThere w`, ahol `w` nem a 0, 1 vagy 2 értékek egyike, vagy `turn by true`.
 
 Ezen hibák előfordulása esetén a robotprogram végrehajtása befejeződik.
 
-# **3\. A fejlesztői környezet működése**
+# 3. A fejlesztői környezet működése
 
-A megvalósítandó alkalmazás tehát egy fejlesztői környezet (Integrated Development Environment, azaz IDE), amelyben a következő funkciók érhetőek el: 
+A megvalósítandó alkalmazás tehát egy fejlesztői környezet (Integrated Development Environment, azaz IDE), amelyben a következő funkciók érhetőek el:
 
-* az input fájl betöltése a térképpel és a programkóddal,  
-* a program megtekintése szöveges forráskód és vizuális blokk-kód nézetben,  
-* a program szerkesztése vizuális blokkszerkesztővel (szerkeszteni csak így kell tudni a programot),  
-* a program futtatása nyomkövetés nélkül lassítva, hogy az jól követhető legyen,  
-* a program futtatása nyomkövetéssel: lépésről lépésre, a változók aktuális értékének megmutatásával, a nyomkövetésnek a szöveges forráskód vagy a vizuális blokk-kód nézet közül csak az egyikben kell működnie (a két megoldás egyenértékű),   
-* a program utolsó futásának naplózása a program indításakor megadott kimeneti fájlba.
+- az input fájl betöltése a térképpel és a programkóddal,
+
+- a program megtekintése szöveges forráskód és vizuális blokk-kód nézetben,
+
+- a program szerkesztése vizuális blokkszerkesztővel (szerkeszteni csak így kell tudni a programot),
+
+- a program futtatása nyomkövetés nélkül lassítva, hogy az jól követhető legyen,
+
+- a program futtatása nyomkövetéssel: lépésről lépésre, a változók aktuális értékének megmutatásával, a nyomkövetésnek a szöveges forráskód vagy a vizuális blokk-kód nézet közül csak az egyikben kell működnie (a két megoldás egyenértékű),
+
+- a program utolsó futásának naplózása a program indításakor megadott kimeneti fájlba.
 
 Amennyiben elkezdődik a program futtatása, a térkép és a robot helyzete alaphelyzetbe kerül.
 
-## **3.1 A vizuális blokk-kód szerkesztése**
+## 3.1 A vizuális blokk-kód szerkesztése
 
-A program kódját \- a szöveges forráskód mellett \- ún. vizuális blokk-kóddal is ábrázolhatjuk. A vizuális blokk-kód és annak szöveges reprezentációja között kölcsönösen egyértelmű a megfeleltetés, azaz minden vizuális blokk-kódhoz pontosan egy szöveges reprezentáció tartozik és minden szöveges forráskódhoz is pontosan egy vizuális blokk-kód tartozik. 
+A program kódját - a szöveges forráskód mellett - ún. vizuális blokk-kóddal is ábrázolhatjuk. A vizuális blokk-kód és annak szöveges reprezentációja között kölcsönösen egyértelmű a megfeleltetés, azaz minden vizuális blokk-kódhoz pontosan egy szöveges reprezentáció tartozik és minden szöveges forráskódhoz is pontosan egy vizuális blokk-kód tartozik.
 
 A vizuális blokk-kód a programozással ismerkedő újoncoknak segíti a programozás elsajátítását, mert egyrészt vizuális, másrészt pedig csak olyan részek illeszthetőek egymásba, amik struktúrájukban egy program érvényes szerkezetét adhatják.
 
 Tekintsük a korábbi egyszerű szöveges forráskódot:
 
-set arany to isThere 2  
+```minescript
+set arany to isThere 2
 print arany
+```
 
 Ez az egyszerű program egy ilyen vizuális blokk-kóddal rajzolható le:
 
-![][image1]
+> Jelölés az ábrákon: `[ ... ]` = szerkeszthető (fehér) mező, `{ ... }` = érték-blokk, a `+---+` keretek a blokkok határai; a vezérlőblokkok törzse beljebb, a blokk „karjában” helyezkedik el.
 
-Látható, hogy a két programsor utasítása, egy-egy blokkot képez, egymás alatt van a két blokk. A fehér téglalapban lévő szerkeszthető részek lehetőséget biztosítanak arra, hogy változóneveket és számokat vagy logikai értéket adjunk meg, ezáltal pontosan definiálhatjuk az adott utasítást.  
-A program tehát blokkokból, azok egymás alá illesztésével épül fel. 
+```text
++------------------------------------------+
+| set [ arany ] to { isThere [ 2 ] }       |
++------------------------------------------+
+| print [ arany ]                          |
++------------------------------------------+
+```
 
-A felületnek egy munkaterületet szükséges biztosítani, amelyen a már összeállított, félkész programtörzs látható: a blokkok egymás után, a vezérlőblokkok törzsében pedig beljebb rendezve. A programhoz új blokkot menüből lehet választani: 
+Látható, hogy a két programsor utasítása, egy-egy blokkot képez, egymás alatt van a két blokk. A fehér téglalapban lévő szerkeszthető részek lehetőséget biztosítanak arra, hogy változóneveket és számokat vagy logikai értéket adjunk meg, ezáltal pontosan definiálhatjuk az adott utasítást.
 
-* parancsblokkok (step forward, turn by, mine here, print, set)  
-* vezérlőblokkok: if, if-else, while  
-* érték-blokkok: a set … to ... parancsblokk to utáni részére illeszthető aritmetikai, összehasonlító és logikai műveletek
+A program tehát blokkokból, azok egymás alá illesztésével épül fel.
+
+A felületnek egy munkaterületet szükséges biztosítani, amelyen a már összeállított, félkész programtörzs látható: a blokkok egymás után, a vezérlőblokkok törzsében pedig beljebb rendezve. A programhoz új blokkot menüből lehet választani:
+
+- parancsblokkok (`step forward`, `turn by`, `mine here`, `print`, `set`)
+
+- vezérlőblokkok: `if`, `if-else`, `while`
+
+- érték-blokkok: a `set … to …` parancsblokk `to` utáni részére illeszthető aritmetikai, összehasonlító és logikai műveletek
 
 A kiválasztott blokkot a program egy megadott pozíciójába lehet beszúrni: parancsblokk másik blokk elé vagy mögé, illetve egy vezérlőblokk törzsébe.
 
 Hogy mindez grafikusan egérrel, vagy szöveges/konzolos felületen, menüpontok és pozíciók megadásával valósul-e meg, rátok van bízva — a követelmény a blokk-alapú, szerkezetileg mindig érvényes szerkesztés, nem egy konkrét megjelenítés.
 
-A szerkesztésnek kényelmesnek kell lennie, ezért ne feltételezzétek, hogy a felhasználó lineárisan, fentről lefelé építi fel a programot. Előfordulhat például, hogy valaki először pl. egy while x blokkot hoz létre, és a set x to ... utasítást csak később helyezi el elé. Ezt a szerkesztőnek engednie kell, mert a program a szerkesztés közben még nem feltétlenül hibamentes, csak a végére kell azzá válnia (de ez majd a program futtatásakor fog eldőlni). Arra viszont ügyeljetek, hogy olyan változónevet ne lehessen létrehozni, amely a fent leírt nyelvtani szabályok szerint kulcsszónak minősül.
+A szerkesztésnek kényelmesnek kell lennie, ezért ne feltételezzétek, hogy a felhasználó lineárisan, fentről lefelé építi fel a programot. Előfordulhat például, hogy valaki először pl. egy `while x` blokkot hoz létre, és a `set x to ...` utasítást csak később helyezi el elé. Ezt a szerkesztőnek engednie kell, mert a program a szerkesztés közben még nem feltétlenül hibamentes, csak a végére kell azzá válnia (de ez majd a program futtatásakor fog eldőlni). Arra viszont ügyeljetek, hogy olyan változónevet ne lehessen létrehozni, amely a fent leírt nyelvtani szabályok szerint kulcsszónak minősül.
 
-## **3.2 A blokkok**
+## 3.2 A blokkok
 
 A vizuális blokk-kódban az egyes elnevezések (blokk, parancsblokk, vezérlőblokk, érték-blokk) az EBNF-nyelvtanhoz valamelyest hasonló, de hozzá képest önálló logikát követnek. A vizuális blokk-kód esetén a fő szempont az egyszerű érthetőség a precizitással (EBNF) szemben, azonban a kettőnek megfeleltethetőnek kell lennie egymásnak, hiszen csak így biztosítható, hogy a szöveges forráskód és a vizuális blokk-kód kölcsönösen megfeleltethetőek legyenek egymásnak.
 
 **Parancsblokkok:**
 
-**![][image2]**
+```text
++--------------------------------------------+
+| step forward [ <simpleval> ]               |
++--------------------------------------------+
+| turn by [ <simpleval> ]                    |
++--------------------------------------------+
+| mine here                                  |
++--------------------------------------------+
+| print [ <simpleval> ]                      |
++--------------------------------------------+
+| set [ <ident> ] to [ <calculatedval> ]     |
++--------------------------------------------+
+```
 
 **Vezérlő parancsblokkok:**
 
-**![][image3]**
+```text
++------------------------------+
+| if [ <simpleval> ]           |
+|   +--------------------------+
+|   |         <block>          |
+|   +--------------------------+
++------------------------------+
 
-**Érték-blokkok:** 
++------------------------------+
+| if [ <simpleval> ]           |
+|   +--------------------------+
+|   |         <block>          |
+|   +--------------------------+
+| else                         |
+|   +--------------------------+
+|   |         <block>          |
+|   +--------------------------+
++------------------------------+
 
-Érték-blokkok a set ⟨ident⟩ to ⟨calculatedval⟩ parancsblokk to utáni részének, vagyis az értékadás jobb oldalának a helyére illeszthetők. A set blokk az ide kerülő érték-blokkot értékeli ki, és az eredményt az ⟨ident⟩ nevű változóba írja. Az érték-blokk tehát önmagában nem utasítás, mindig egy set blokk része, és nem ágyazható egy másik érték-blokk mezőjébe. 
++------------------------------+
+| while [ <simpleval> ]        |
+|   +--------------------------+
+|   |         <block>          |
+|   +--------------------------+
++------------------------------+
+```
+
+**Érték-blokkok:**
+
+Érték-blokkok a `set ⟨ident⟩ to ⟨calculatedval⟩` parancsblokk `to` utáni részének, vagyis az értékadás jobb oldalának a helyére illeszthetők. A `set` blokk az ide kerülő érték-blokkot értékeli ki, és az eredményt az ⟨ident⟩ nevű változóba írja. Az érték-blokk tehát önmagában nem utasítás, mindig egy `set` blokk része, és nem ágyazható egy másik érték-blokk mezőjébe.
 
 Az alábbi érték-blokkok használhatók:
 
-![][image4]
+```text
++--------------------------------------+
+| [ <simpleval> ]                      |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ]  +  [ <simpleval> ]  |  | [ <simpleval> ]  -  [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ]  *  [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ]  =  [ <simpleval> ]  |  | [ <simpleval> ]  <> [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ]  <  [ <simpleval> ]  |  | [ <simpleval> ]  <= [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ]  >  [ <simpleval> ]  |  | [ <simpleval> ]  >= [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| [ <simpleval> ] and [ <simpleval> ]  |  | [ <simpleval> ] or  [ <simpleval> ]  |
++--------------------------------------+  +--------------------------------------+
+| not [ <simpleval> ]                  |
++--------------------------------------+
+| isThere [ <simpleval> ]              |
++--------------------------------------+
+```
 
-Az egyes blokkok pontos működése \- a kulcsszavaik alapján \- a korábbi \- nyelvtanról szóló \- részből ismerhető meg.
+Az egyes blokkok pontos működése - a kulcsszavaik alapján - a korábbi - nyelvtanról szóló - részből ismerhető meg.
 
-A blokkok szerkeszthető mezőibe (a ⟨simpleval⟩, ⟨ident⟩ helyére) a konkrét változóneveket, számokat vagy logikai értékeket kell megadni. Ezeket elegendő begépelni, nem elvárás, hogy listából is kiválaszthatók legyenek (pl. a már létező változók vagy a true/false értékek közül), de ez is megvalósítható. A ⟨block⟩ helyére újabb parancsblokkok és vezérlő parancsblokkok sorozata kerülhet. 
+A blokkok szerkeszthető mezőibe (a ⟨simpleval⟩, ⟨ident⟩ helyére) a konkrét változóneveket, számokat vagy logikai értékeket kell megadni. Ezeket elegendő begépelni, nem elvárás, hogy listából is kiválaszthatók legyenek (pl. a már létező változók vagy a `true`/`false` értékek közül), de ez is megvalósítható. A ⟨block⟩ helyére újabb parancsblokkok és vezérlő parancsblokkok sorozata kerülhet.
 
-A vezérlő blokkok egymásba ágyazása legfeljebb három szint mély lehet. Az elfogadott maximális egymásba ágyazottságot mutatja ez a példa:
+A vezérlő blokkok egymásba ágyazása <u>legfeljebb három szint mély lehet.</u> Az elfogadott maximális egymásba ágyazottságot mutatja ez a példa:
 
-while  
-  if true  
-    if true  
+```minescript
+while
+  if true
+    if true
       print 1
+```
 
-Az else utasítás ahhoz a szinthez tartozik, amelyikhez a hozzá tartozó if tartozik.
+Az `else` utasítás ahhoz a szinthez tartozik, amelyikhez a hozzá tartozó `if` tartozik.
 
 A vizuális szerkesztőnek nem szabad több szintű programot engednie létrehoznia, azt pedig feltételezhetitek, hogy az input fájlban nem lesz ilyen programkód.
 
 Íme a korábbi bonyolultabb program, ami vezeti a robotot előre, amíg falba nem ütközik. Út közben pedig minden aranyrögöt kibányász, majd a végén kiírja, mennyi aranyrögöt bányászott ki.
 
-![][image5]
+```text
++--------------------------------------------------+
+| set [ count ] to { [ 0 ] }                       |
++--------------------------------------------------+
+| set [ fal ] to { isThere [ 1 ] }                 |
++--------------------------------------------------+
+| set [ megy ] to { not [ fal ] }                  |
++--------------------------------------------------+
+| while [ megy ]                                   |
+|   +----------------------------------------------+
+|   | set [ arany ] to { isThere [ 2 ] }           |
+|   +----------------------------------------------+
+|   | if [ arany ]                                 |
+|   |   +------------------------------------------+
+|   |   | step forward [ 1 ]                       |
+|   |   +------------------------------------------+
+|   |   | mine here                                |
+|   |   +------------------------------------------+
+|   |   | set [ count ] to { [ count ] + [ 1 ] }   |
+|   |   +------------------------------------------+
+|   | else                                         |
+|   |   +------------------------------------------+
+|   |   | step forward [ 1 ]                       |
+|   |   +------------------------------------------+
+|   +----------------------------------------------+
+|   | set [ fal ] to { isThere [ 1 ] }             |
+|   +----------------------------------------------+
+|   | set [ megy ] to { not [ fal ] }              |
+|   +----------------------------------------------+
++--------------------------------------------------+
+| print [ count ]                                  |
++--------------------------------------------------+
+```
 
-# **4\. A naplózás**
+# 4. A naplózás
 
-Tegyük fel, hogy az alkalmazásotok lefordított, futtatható fájljának neve robot.exe. Ha lefuttatjuk parancssorból az alábbi parancsot:
+Tegyük fel, hogy az alkalmazásotok lefordított, futtatható fájljának neve `robot.exe`. Ha lefuttatjuk parancssorból az alábbi parancsot:
 
-robot.exe input\_001.txt output\_001.txt
+```sh
+robot.exe input_001.txt output_001.txt
+```
 
-Akkor a napló állományt az IDE output\_001.txt néven fogja létrehozni, és az minden újonnan elkezdett programfuttatáskor (függetlenül attól, hogy nyomkövetéssel vagy anélkül került elindításra a program) felülíródik. 
+Akkor a napló állományt az IDE `output_001.txt` néven fogja létrehozni, és az minden újonnan elkezdett programfuttatáskor (függetlenül attól, hogy nyomkövetéssel vagy anélkül került elindításra a program) felülíródik.
 
-A program futása közben az IDE minden feldolgozott programsor számát kiírja, olyan sorrendben, ahogy a sorok egymás után végrehajtásra kerülnek. Ciklusnál ez azt jelenti, hogy a törzs sorai minden lefutáskor újra megjelennek, a while sor száma pedig minden feltétel-kiértékelésnél, a visszaugrásnál is megjelenik. Az else sorának száma csak akkor kerül a naplóba, ha az else ág lefut, vagyis ha az if feltétele false volt.
+A program futása közben az IDE minden feldolgozott programsor számát kiírja, olyan sorrendben, ahogy a sorok egymás után végrehajtásra kerülnek. Ciklusnál ez azt jelenti, hogy a törzs sorai minden lefutáskor újra megjelennek, a `while` sor száma pedig minden feltétel-kiértékelésnél, a visszaugrásnál is megjelenik. Az `else` sorának száma csak akkor kerül a naplóba, ha az `else` ág lefut, vagyis ha az `if` feltétele `false` volt.
 
-Amennyiben a robot API-ja kerül meghívásra, akkor a sorszám után naplózásra kerül az is, hogy milyen API-végpont (a forráskódbeli alakjában, pl. turn by, mine here), milyen paraméterrel lett meghívva (futási idejű kiértékelt értékkel), és mi volt a visszatérési érték (ha van), ebben a sorrendben.  
-Ha **bármelyik sor** végrehajtása közben futási hiba keletkezik, a sor végére ki kell írni a hibakódot (a hibakódot mindig csupa nagybetűvel kell írni). **Egy sorban legfeljebb egy hiba keletkezhet, az, amelyik a sor kiértékelése során az első alkalommal jelentkezik.** 
+Amennyiben a robot API-ja kerül meghívásra, akkor a sorszám után naplózásra kerül az is, hogy milyen API-végpont (a forráskódbeli alakjában, pl. `turn by`, `mine here`), milyen paraméterrel lett meghívva (futási idejű kiértékelt értékkel), és mi volt a visszatérési érték (ha van), ebben a sorrendben.
 
-Ha egy API-hívás paramétere nem inicializált változó, a sorban az API hívás neve és az E\_UNINITIALIZED hibakód szerepel, a paraméter nélkül (pl. isThere E\_UNINITIALIZED).
+Ha **bármelyik sor** végrehajtása közben futási hiba keletkezik, a sor végére ki kell írni a hibakódot (a hibakódot mindig csupa nagybetűvel kell írni). **Egy sorban legfeljebb egy hiba keletkezhet, az, amelyik a sor kiértékelése során az első alkalommal jelentkezik.**
 
-A programfutás végét az EOR sor (end of run) jelzi (akkor is, ha hiba nélkül vagy hibakóddal fejeződött be a futás).
+Ha egy API-hívás paramétere nem inicializált változó, a sorban az API hívás neve és az `E_UNINITIALIZED` hibakód szerepel, a paraméter nélkül (pl. `isThere E_UNINITIALIZED`).
+
+A programfutás végét az `EOR` sor (end of run) jelzi (akkor is, ha hiba nélkül vagy hibakóddal fejeződött be a futás).
 
 Pl. adott a következő kód:
 
-set arany to isThere 2  
-set count to 0  
-turn by 0  
-print arany  
-if false  
-  print 1  
-else  
-  set x to isThere 3  
+```minescript
+set arany to isThere 2
+set count to 0
+turn by 0
+print arany
+if false
+  print 1
+else
+  set x to isThere 3
 print 9
+```
 
-Az output\_001.txt naplófájlba a következő íródik a program elindítása után (feltételezve, hogy nincs arany a robot előtt).
+Az `output_001.txt` naplófájlba a következő íródik a program elindítása után (feltételezve, hogy nincs arany a robot előtt).
 
-1 isThere 2 false  
-2  
-3 turn by 0  
-4 print false  
-5  
-7  
-8 isThere 3 E\_BAD\_ARG  
+```text
+1 isThere 2 false
+2
+3 turn by 0
+4 print false
+5
+7
+8 isThere 3 E_BAD_ARG
 EOR
+```
 
 A naplófájl értelmezése:
 
-* Minden sor elején a \- szöveges forráskód reprezentáció szerinti \- éppen futtatott sor száma áll: 1, 2, 3, .... Az utolsó sorban a programfutás vége jelzés (EOR) szerepel. (Üres program futtatása esetén a naplófájl egyetlen EOR sort tartalmazna.)  
-* Az 1\. sor tartalmazza, hogy az isThere API került meghívásra egyetlen paraméter (2) átadásával, a visszatérési érték pedig false lett. **Mivel a nyelvtan szerint egy sorban csak egyetlen függvényhívás vagy parancs szerepelhet, ezért egy sorba se kerülhet egynél több API hívás naplózása.**  
-* A 2\. sorban egy értékadás történt, így nincs extra naplózandó információ.   
-* A 3\. sorban API került meghívásra (turn by) egyetlen paraméterrel, nincs visszatérési érték.  
-* A 4\. sorban a print utasítás került meghívásra az API-n. A paraméter kiértékelt értéke került kiírásra.  
-* Az 5\. sor egy if\-et tartalmaz, a sor számán kívül nem kerül más kiírásra.  
-* (A 6-os sorszám hiányzik, mert az if nem teljesült.)   
-* A 7-tel **kezdődő sor** üres (else utasítás).   
-* A 8-as **kezdődő sorban** hiba történt, a futási hiba miatt kiírásra került a hibakód is.  
-* Egy soron belül az elemeket (a sorszámot, az API-végpont nevét, a paramétert, a visszatérési értéket és a hibakódot) pontosan egy szóköz választja el egymástól, a sorok végén pedig nincs felesleges szóköz.
+- Minden sor elején a - szöveges forráskód reprezentáció szerinti - éppen futtatott sor száma áll: 1, 2, 3, .... Az utolsó sorban a programfutás vége jelzés (`EOR`) szerepel. (Üres program futtatása esetén a naplófájl egyetlen `EOR` sort tartalmazna.)
 
-## **4.1 Alternatív befejezés: futási limit**
+- Az 1. sor tartalmazza, hogy az `isThere` API került meghívásra egyetlen paraméter (`2`) átadásával, a visszatérési érték pedig `false` lett. **Mivel a nyelvtan szerint egy sorban csak egyetlen függvényhívás vagy parancs szerepelhet, ezért egy sorba se kerülhet egynél több API hívás naplózása.**
 
-A program futása során legfeljebb 1000 programsor dolgozható fel. Ha a program az 1000\. feldolgozott programsor után újabb sor feldolgozására készülne, a futás megszakad. Ilyenkor a naplófájl az 1000\. feldolgozott programsor bejegyzése után egyetlen további sorként az INSTRUCTION\_COUNT\_LIMIT\_EXCEEDED hibajelzést tartalmazza (ez a napló 1001\. sora), az EOR sor pedig **nem kerül** a naplófájlba.
+- A 2. sorban egy értékadás történt, így nincs extra naplózandó információ.
 
-# **5\. A robot szimulátor**
+- A 3. sorban API került meghívásra (`turn by`) egyetlen paraméterrel, nincs visszatérési érték.
 
-A fejlesztői környezet egyik fő része az ún. robot szimulátor. 
+- A 4. sorban a `print` utasítás került meghívásra az API-n. A paraméter kiértékelt értéke került kiírásra.
 
-A szimulátor a térképet jeleníti meg, és rajta a robot aktuális helyzetét és irányát. Mutatja a már felfedezett mezőket – azokat, amelyeken a robot már járt, vagy amelyekre meghívódott az isThere függvény – megkülönböztetve a még feltérképezetlen területektől.   
-Emellett megjeleníti a robot érzékelőjének állapotát is: azt, hogy a robot aktuális helyzetéből és irányából nézve mi van közvetlenül előtte (üres kamra, fal vagy aranyrög), vagyis mit adna vissza ebben a pillanatban az isThere függvény. Az érzékelő állapota a robot minden mozgásakor és fordulásakor frissül, függetlenül attól, hogy a program meghívta-e az isThere függvényt. Ha a robot a térkép széle felé néz, az érzékelő falat mutat. Az érzékelő megjelenítése önmagában nem teszi felfedezetté a robot előtti mezőt. 
+- Az 5. sor egy `if`-et tartalmaz, a sor számán kívül nem kerül más kiírásra.
+
+- (A 6-os sorszám hiányzik, mert az `if` nem teljesült.)
+
+- A 7-tel **kezdődő sor** üres (`else` utasítás).
+
+- A 8-as **kezdődő sorban** hiba történt, a futási hiba miatt kiírásra került a hibakód is.
+
+- Egy soron belül az elemeket (a sorszámot, az API-végpont nevét, a paramétert, a visszatérési értéket és a hibakódot) pontosan egy szóköz választja el egymástól, a sorok végén pedig nincs felesleges szóköz.
+
+## 4.1 Alternatív befejezés: futási limit
+
+A program futása során legfeljebb 1000 programsor dolgozható fel. Ha a program az 1000. feldolgozott programsor után újabb sor feldolgozására készülne, a futás megszakad. Ilyenkor a naplófájl az 1000. feldolgozott programsor bejegyzése után egyetlen további sorként az `INSTRUCTION_COUNT_LIMIT_EXCEEDED` hibajelzést tartalmazza (ez a napló 1001. sora), az `EOR` sor pedig **nem kerül** a naplófájlba.
+
+# 5. A robot szimulátor
+
+A fejlesztői környezet egyik fő része az ún. robot szimulátor.
+
+A szimulátor a térképet jeleníti meg, és rajta a robot aktuális helyzetét és irányát. Mutatja a már felfedezett mezőket – azokat, amelyeken a robot már járt, vagy amelyekre meghívódott az `isThere` függvény – megkülönböztetve a még feltérképezetlen területektől.
+
+Emellett megjeleníti a robot érzékelőjének állapotát is: azt, hogy a robot aktuális helyzetéből és irányából nézve mi van közvetlenül előtte (üres kamra, fal vagy aranyrög), vagyis mit adna vissza ebben a pillanatban az `isThere` függvény. Az érzékelő állapota a robot minden mozgásakor és fordulásakor frissül, függetlenül attól, hogy a program meghívta-e az `isThere` függvényt. Ha a robot a térkép széle felé néz, az érzékelő falat mutat. Az érzékelő megjelenítése önmagában nem teszi felfedezetté a robot előtti mezőt.
 
 A szimulátor azt is mutatja, hogy a robot eddig hány aranyrögöt bányászott ki. A már kibányászott aranyrögök helyét nem szükséges külön jelölni a térképen.
 
-A szimuláció kétféleképpen történhet. Automatikusan, az éppen szerkesztett (vagy betöltött) program futtatásával, illetve kézzel, a robot API vezérlő végpontjainak (turn by, step forward, mine here) a felhasználói felületről történő, egyenkénti meghívásával. Kézi irányítás esetén az aktuális programfuttatás megszakad, és nem történik naplózás. 
+A szimuláció kétféleképpen történhet. Automatikusan, az éppen szerkesztett (vagy betöltött) program futtatásával, illetve kézzel, a robot API vezérlő végpontjainak (`turn by`, `step forward`, `mine here`) a felhasználói felületről történő, egyenkénti meghívásával. Kézi irányítás esetén az aktuális programfuttatás megszakad, és nem történik naplózás.
 
-# **6\. Beadandó**
+# 6. Beadandó
 
 A csapatnak háromféle anyagot kell beadnia:
 
-* a **programot**, annak forráskódját, futtatható változatát és a használt fejlesztői / build környezet leírását, valamint a mesterséges intelligencia használatának rövid leírását,  
-* egy **bemutató videót**: ami egyértelműen bizonyítja a program által megvalósított funkciók helyes működését a mellékelt forgatókönyv alapján,   
-* valamint a **verseny tesztek futtatásának eredményét**: a versenybizottság által, a csapat számára előkészített teszt input halmaz futásának az eredményét.
+- a **programot**, annak forráskódját, futtatható változatát és a használt fejlesztői / build környezet leírását, valamint a mesterséges intelligencia használatának rövid leírását,
 
-## **6.1 A beadandókkal kapcsolatos elvárások**
+- egy **bemutató videót**: ami egyértelműen bizonyítja a program által megvalósított funkciók helyes működését a mellékelt forgatókönyv alapján,
 
-**A program.** A teljes fejlesztői mappát adjátok be, ahogy az a gépeteken van: a teljes forráskódot és benne a lefordított, futtatható alkalmazást is, amennyiben az a programozási környezet alapján létezhet (pl. robot.exe). Ügyeljetek arra, hogy a lefordított alkalmazás ténylegesen futtatható legyen, és megfeleljen a forráskódnak. Készítsetek egy rövid build.md állományt, hogy milyen platformon / fejlesztői környezet alatt fordították a programot és hogyan.
+- valamint a **verseny tesztek futtatásának eredményét**: a versenybizottság által, a csapat számára előkészített teszt input halmaz futásának az eredményét.
 
-Szintén a zip fájl gyökerébe, a build.md mellé helyezzetek el egy ai.md állományt, amelyben röviden leírjátok, hogyan használtatok mesterséges intelligenciát a fejlesztés során, ha használtatok. Az ai.md tartalmazza:
+## 6.1 A beadandókkal kapcsolatos elvárások
 
-* milyen AI-eszközöket és modelleket használtatok (az eszköz és a modell neve, verziója);  
-* mire használtátok az AI-t, és nagyjából a program mekkora része készült AI segítségével;  
-* hogyan ellenőriztétek és javítottátok az AI által készített eredményt;  
-* 5 konkrét esetet, mindegyiket egy-két mondatban. Azokat az eseteket válasszátok, amelyek a legnagyobb hatással voltak a munkátok eredményére és minőségére, legyen szó akár sikeres, akár sikertelen AI-használatról.
+**A program.** A teljes fejlesztői mappát adjátok be, ahogy az a gépeteken van: a teljes forráskódot és benne a lefordított, futtatható alkalmazást is, amennyiben az a programozási környezet alapján létezhet (pl. `robot.exe`). Ügyeljetek arra, hogy a lefordított alkalmazás ténylegesen futtatható legyen, és megfeleljen a forráskódnak. Készítsetek egy rövid `build.md` állományt, hogy milyen platformon / fejlesztői környezet alatt fordították a programot és hogyan.
 
-Ha nem használtatok AI-t, az ai.md\-ben ezt írjátok le, azt is leírva, miért döntöttetek így.
+Szintén a zip fájl gyökerébe, a `build.md` mellé helyezzetek el egy `ai.md` állományt, amelyben röviden leírjátok, hogyan használtatok mesterséges intelligenciát a fejlesztés során, ha használtatok. Az `ai.md` tartalmazza:
 
-**A bemutató videó.** Egy legfeljebb 15 perces, mp4 formátumú felvétel[^1], amely az alkalmazást működés közben mutatja be az alábbi forgatókönyv alapján, kitérve minden elkészült funkcióra. A felvételből **legfeljebb 10 perc lehet a programbemutató**, és **legfeljebb 5 perc egy kihívást jelentő programrész** bemutatása (lásd 1\. sz. melléklet). A felhasználó felület úgy legyen alapból is megtervezve, hogy egyértelmű legyen a felhasználó számára, hogy a programot hogyan kell használni akkor is, ha a felhasználó nem ismeri még a programotokat. Fontos, hogy a videófelvételnek nem feltétlenül szükséges esztétikusnak lennie, a bemutató tartalma a fontos, tehát az, hogy a felvételen minden jól látszódjon: a felbontás legyen megfelelő (a feliratok olvashatóak, az esetleges grafikák jól láthatóak legyenek), az időzítés pedig legyen nyugodt (ne legyen kapkodó). Lehet beszéddel is segíteni a megértést, de ez nem kötelező. A versenybizottság a videót az értékelés során többször megnézi és meg-megállítja, de ha a helyes működést aránytalanul nagy időráfordítással, csak aprólékos, sokszori ismételt visszatekeréssel lehet megérteni, vagy az nem egyértelmű, akkor az érintett feladatrészre a csapat 0 pontot kap. 
+- milyen AI-eszközöket és modelleket használtatok (az eszköz és a modell neve, verziója);
 
-A bemutató videó forgatókönyvét az 1\. mellékletben találhatjátok.
+- mire használtátok az AI-t, és nagyjából a program mekkora része készült AI segítségével;
 
-**A verseny tesztek futtatásának eredménye.** A versenyhétvége végén a bizottság bemeneti teszteseteire (input\_001.txt, input\_002.txt, …) le kell futtatnotok az alkalmazásotokat, és a keletkező kimeneteket egyetlen results.zip fájlban beküldenetek. A kimeneti fájlok neve pontosan a bemenetekhez igazodjon: output\_001.txt, output\_002.txt, és így tovább. A sorszámozott input fájlok kihagyás nélkül követik egymást.
+- hogyan ellenőriztétek és javítottátok az AI által készített eredményt;
 
-## **6.2 Mit hová kell feltölteni**
+- 5 konkrét esetet, mindegyiket egy-két mondatban. Azokat az eseteket válasszátok, amelyek a legnagyobb hatással voltak a munkátok eredményére és minőségére, legyen szó akár sikeres, akár sikertelen AI-használatról.
 
-A programot, a videót és a verseny tesztek futtatásának eredményeit SFTP[^2]\-n, a csapat saját mappájába kell feltölteni a Discordon megadott SFTP-szerverre. 
+Ha nem használtatok AI-t, az `ai.md`-ben ezt írjátok le, azt is leírva, miért döntöttetek így.
+
+**A bemutató videó.** Egy legfeljebb 15 perces, mp4 formátumú felvétel[^1], amely az alkalmazást működés közben mutatja be az alábbi forgatókönyv alapján, kitérve minden elkészült funkcióra. A felvételből **legfeljebb 10 perc lehet a programbemutató**, és **legfeljebb 5 perc egy kihívást jelentő programrész** bemutatása (lásd 1. sz. melléklet). A felhasználó felület úgy legyen alapból is megtervezve, hogy egyértelmű legyen a felhasználó számára, hogy a programot hogyan kell használni akkor is, ha a felhasználó nem ismeri még a programotokat. Fontos, hogy a videófelvételnek nem feltétlenül szükséges esztétikusnak lennie, a bemutató tartalma a fontos, tehát az, hogy a felvételen minden jól látszódjon: a felbontás legyen megfelelő (a feliratok olvashatóak, az esetleges grafikák jól láthatóak legyenek), az időzítés pedig legyen nyugodt (ne legyen kapkodó). Lehet beszéddel is segíteni a megértést, de ez nem kötelező. A versenybizottság a videót az értékelés során többször megnézi és meg-megállítja, de ha a helyes működést aránytalanul nagy időráfordítással, csak aprólékos, sokszori ismételt visszatekeréssel lehet megérteni, vagy az nem egyértelmű, akkor az érintett feladatrészre a csapat 0 pontot kap.
+
+A bemutató videó forgatókönyvét az 1. mellékletben találhatjátok.
+
+**A verseny tesztek futtatásának eredménye.** A versenyhétvége végén a bizottság bemeneti teszteseteire (`input_001.txt`, `input_002.txt`, …) le kell futtatnotok az alkalmazásotokat, és a keletkező kimeneteket egyetlen `results.zip` fájlban beküldenetek. A kimeneti fájlok neve pontosan a bemenetekhez igazodjon: `output_001.txt`, `output_002.txt`, és így tovább. A sorszámozott input fájlok kihagyás nélkül követik egymást.
+
+## 6.2 Mit hová kell feltölteni
+
+A programot, a videót és a verseny tesztek futtatásának eredményeit SFTP[^2]-n, a csapat saját mappájába kell feltölteni a Discordon megadott SFTP-szerverre.
 
 A csapat SFTP-mappájának szerkezete:
 
-/csapatnev/                         
-├── input.7z     ← a bizottság teszi ide; jelszóval védett  
-├── project.zip  ← FELTÖLTÉS vasárnap 19:00-ig (program forráskód és bináris \+ build.md   
-			 \+ ai.md)  
-└── bemutato.mp4 ← FELTÖLTÉS vasárnap 19:00-ig (a bemutató videó)  
+```text
+/csapatnev/
+├── input.7z     ← a bizottság teszi ide; jelszóval védett
+├── project.zip  ← FELTÖLTÉS vasárnap 19:00-ig (program forráskód és bináris + build.md + ai.md)
+└── bemutato.mp4 ← FELTÖLTÉS vasárnap 19:00-ig (a bemutató videó)
 └── results.zip  ← FELTÖLTÉS vasárnap 19:30-ig (verseny teszt futtatás eredmények)
+```
 
-Az input.7z\-et a bizottság helyezi el a csapat mappájában; ez tartalmazza a verseny tesztek bemeneti fájljait. A fájl 7z tömörítővel tömörített és jelszóval védett, kitömöríteni csak a vasárnap 19:00-kor Discordon közölt jelszóval tudjátok. 
+Az `input.7z`-et a bizottság helyezi el a csapat mappájában; ez tartalmazza a verseny tesztek bemeneti fájljait. A fájl 7z tömörítővel tömörített és jelszóval védett, kitömöríteni csak a vasárnap 19:00-kor Discordon közölt jelszóval tudjátok.
 
-A project.zip fájlt a csapat tölti fel, és tartalmazza az alkalmazásotok forráskódját és annak lefordított változatát (bináris), valamint a build.md és az ai.md állományt a zip fájl gyökerében.
+A `project.zip` fájlt a csapat tölti fel, és tartalmazza az alkalmazásotok forráskódját és annak lefordított változatát (bináris), valamint a `build.md` és az `ai.md` állományt a zip fájl gyökerében.
 
-A bemutato.mp4 fájl az alkalmazás felhasználói felületének működéséről készített videó. Max. 500MB hosszúságú lehet.
+A `bemutato.mp4` fájl az alkalmazás felhasználói felületének működéséről készített videó. Max. 500MB hosszúságú lehet.
 
-A keletkező kimeneteket egyetlen results.zip\-be csomagolvaí 19:30-ig töltsétek fel. A results.zip a kimeneti fájlokat a zip gyökerében tartalmazza (nem almappában), pontosan a bemenetekhez igazodó néven (output\_001.txt, output\_002.txt, …).
+A keletkező kimeneteket egyetlen `results.zip`-be csomagolvaí 19:30-ig töltsétek fel. A `results.zip` a kimeneti fájlokat a zip gyökerében tartalmazza (nem almappában), pontosan a bemenetekhez igazodó néven (`output_001.txt`, `output_002.txt`, …).
 
-## **6.3 A verseny tesztek futtatása és időrend**
+## 6.3 A verseny tesztek futtatása és időrend
 
 Az SFTP-szerverre **vasárnap 19:00-ig várjuk a programot és a videót. Az ez után az időpont után feltöltött eme fájlokat már nem tudjuk figyelembe venni.**
 
 19:00 és 20:00 között a csapatoknak folyamatosan rendelkezésre kell állniuk, mert ekkor fog zajlani a verseny tesztek futtatása és eredményeinek beküldése, amelyhez a csapatok közreműködése szükséges.
 
-| Időpont | Teendő |
-| :---- | :---- |
-| A hétvége során | Az input.7z (jelszóval védett) letöltése az SFTP-mappából  |
-| Vasárnap 19:00-ig | A project.zip és bemutato.mp4 feltöltése SFTP-n |
-| Vasárnap 19:00 | A jelszó közlése Discordon; az input.7z kitömörítése és a program lefuttatása minden bemenetre |
-| Vasárnap 19:30-ig | A results.zip feltöltése SFTP-n. **Ügyeljetek arra, hogy a sok tesztfájl (200+) futtatása miatt beférjetek a fél órás időkeretbe.** Ehhez készüljetek fel arra, hogy a nagyszámú tesztesetet automatikusan \- egymás után \- könnyen le tudjátok futtatni. (Ezt segíti elő a feladat elején kért \-q paraméter, azaz a csendes futtatás használata.)   |
+| **Időpont**       | **Teendő**                                                                                                                                                                                                                                                                                                                                            |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A hétvége során   | Az `input.7z` (jelszóval védett) letöltése az SFTP-mappából                                                                                                                                                                                                                                                                                           |
+| Vasárnap 19:00-ig | A `project.zip` és `bemutato.mp4` feltöltése SFTP-n                                                                                                                                                                                                                                                                                                   |
+| Vasárnap 19:00    | A jelszó közlése Discordon; az `input.7z` kitömörítése és a program lefuttatása minden bemenetre                                                                                                                                                                                                                                                      |
+| Vasárnap 19:30-ig | A `results.zip` feltöltése SFTP-n. **Ügyeljetek arra, hogy a sok tesztfájl (200+) futtatása miatt beférjetek a fél órás időkeretbe.** Ehhez készüljetek fel arra, hogy a nagyszámú tesztesetet automatikusan - egymás után - könnyen le tudjátok futtatni. (Ezt segíti elő a feladat elején kért `-q` paraméter, azaz a csendes futtatás használata.) |
 
-# **7\. Értékelési szempontok**
+# 7. Értékelési szempontok
 
-Az elkészített alkalmazás konzolos alkalmazás vagy grafikus felülettel rendelkező (Graphical User Interface-es, azaz GUI-s) alkalmazás is lehet. **Pontozás szempontjából egyik sem jelent előnyt a másikhoz képest a verseny 1\. fordulójában.**   
-   
-A versenybizottság a beadott videó és program alapján ellenőrzi, hogy az alkalmazás a felhasználói felületén helyesen megvalósítja-e az elkészült funkciókat. 
+Az elkészített alkalmazás konzolos alkalmazás vagy grafikus felülettel rendelkező (Graphical User Interface-es, azaz GUI-s) alkalmazás is lehet. **Pontozás szempontjából egyik sem jelent előnyt a másikhoz képest a verseny 1. fordulójában.**
+
+A versenybizottság a beadott videó és program alapján ellenőrzi, hogy az alkalmazás a felhasználói felületén helyesen megvalósítja-e az elkészült funkciókat.
 
 Az IDE értékelésénél a feladatban kért funkciók helyes működésén túl a felület áttekinthetőségét is figyelembe vesszük: mennyire könnyen érthető és használható a felület annak is, aki most találkozik vele először. Emellett értékeljük a feladat által nem kért, de ötletes, a használatot segítő fejlesztéseket is, ha azok a bemutató videóban szerepelnek.
 
 A forráskód és a beküldött binárison keresztül kerül majd ellenőrzésre, hogy a videó és a beküldött verseny teszt eredmények valóban a csapat programjának az eredményei.
 
-A verseny tesztek segítségével kerül teljeskörűen tesztelésre a programfuttatás és a robotszimulátor logikájának helyes megvalósítása. Kisméretűek lesznek a tesztállományok, így nem szükséges arra felkészülnötök, hogy nagyméretű inputot hatékonyan kezeljetek. 
+A verseny tesztek segítségével kerül teljeskörűen tesztelésre a programfuttatás és a robotszimulátor logikájának helyes megvalósítása. Kisméretűek lesznek a tesztállományok, így nem szükséges arra felkészülnötök, hogy nagyméretű inputot hatékonyan kezeljetek.
 
-A fejlesztés során használhattok mesterséges intelligenciát (AI-t). A feladat szövegének megértéséhez, kérdések feltételéhez a versenybizottság kifejezetten javasolja ennek használatát\! A programozást tekintve viszont azt javasoljuk, hogy a generált programkód tüzetes ellenőrzésével és/vagy előre definiált teszteseteken keresztül ellenőrizzétek a programkódot, így garantálható a szoftver helyessége és az értékelésnél a magas pontszám\!
+A fejlesztés során használhattok mesterséges intelligenciát (AI-t). A feladat szövegének megértéséhez, kérdések feltételéhez a versenybizottság kifejezetten javasolja ennek használatát! A programozást tekintve viszont azt javasoljuk, hogy a generált programkód tüzetes ellenőrzésével és/vagy előre definiált teszteseteken keresztül ellenőrizzétek a programkódot, így garantálható a szoftver helyessége és az értékelésnél a magas pontszám!
 
-Az AI használata önmagában nem befolyásolja a pontszámot: sem több, sem kevesebb pont nem jár azért, ha egy csapat használt AI-t, vagy ha nem használt. Azt viszont értékeljük, hogy aki használta, mennyire tudatosan tette: mire használta, és hogyan ellenőrizte, javította a kapott eredményt. Ezt az ai.md alapján ítéljük meg.
+Az AI használata önmagában nem befolyásolja a pontszámot: sem több, sem kevesebb pont nem jár azért, ha egy csapat használt AI-t, vagy ha nem használt. Azt viszont értékeljük, hogy aki használta, mennyire tudatosan tette: mire használta, és hogyan ellenőrizte, javította a kapott eredményt. Ezt az `ai.md` alapján ítéljük meg.
 
-| Pontozandó elem | Maximális pontérték  |
-| :---- | :---- |
-| Programfuttatás helyes működése (verseny tesztek) | 160 pont |
-| Felhasználói felület működése (videó \+ beküldött program alapján), build.md és ai.md | 140 pont |
-| **Összesen** | **300 pont** |
+| **Pontozandó elem**                                                                      | **Maximális pontérték** |
+|------------------------------------------------------------------------------------------|-------------------------|
+| Programfuttatás helyes működése (verseny tesztek)                                        | 160 pont                |
+| Felhasználói felület működése (videó + beküldött program alapján), `build.md` és `ai.md` | 140 pont                |
+| **Összesen**                                                                             | **300 pont**            |
 
 **Ha a program (project.zip) nem kerül határidőn belül megfelelően feltöltésre, akkor az összpontszám 0 pont lesz. Ha a bemutato.mp4 nem kerül feltöltésre, akkor a felhasználói felület működése 0 pont lesz.**
 
-A 2\. fordulóban a továbbjutó csapatok az 1\. fordulóban készített alkalmazást fejleszthetik tovább (akár újra implementálással is). 
+A 2. fordulóban a továbbjutó csapatok az 1. fordulóban készített alkalmazást fejleszthetik tovább (akár újra implementálással is).
 
-*Jó munkát kíván a versenybizottság\!*
+*Jó munkát kíván a versenybizottság!*
 
-**1\. sz. melléklet: A bemutató videó forgatókönyve**
+**1. sz. melléklet: A bemutató videó forgatókönyve**
 
-A videó a felhasználói felületet mutatja be az alábbi bemeneten és az alábbi lépések sorrendjében. A nyelvi szabályokat, a hibakódokat és a naplóformátumot a verseny tesztek ellenőrzik, ezeket nem kell külön részletesen bemutatni. Ha egy funkció nem készült el, vagy valami miatt nem tudjátok pontosan a forgatókönyv szerint bemutatni az alkalmazást, azt jelezzétek felirattal vagy hangalámondással a videó közben vagy a végén. Ha nem folytatható egy az egyben a bemutató a forgatókönyv szerint, próbáljátok áthidalni a hiányosságot, hogy minél több mindent bemutathassatok az alkalmazásotokból, miközben \- lehetőség szerint \- minél inkább közel maradtok az eredeti forgatókönyvhöz és annak szándékához. 
+A videó a felhasználói felületet mutatja be az alábbi bemeneten és az alábbi lépések sorrendjében. A nyelvi szabályokat, a hibakódokat és a naplóformátumot a verseny tesztek ellenőrzik, ezeket nem kell külön részletesen bemutatni. Ha egy funkció nem készült el, vagy valami miatt nem tudjátok pontosan a forgatókönyv szerint bemutatni az alkalmazást, azt jelezzétek felirattal vagy hangalámondással a videó közben vagy a végén. Ha nem folytatható egy az egyben a bemutató a forgatókönyv szerint, próbáljátok áthidalni a hiányosságot, hogy minél több mindent bemutathassatok az alkalmazásotokból, miközben - lehetőség szerint - minél inkább közel maradtok az eredeti forgatókönyvhöz és annak szándékához.
 
 Ha a felvétel közben elrontotok valamit, vagy a forgatókönyvtől eltérő lépést tesztek, nem kell megállnotok és elölről kezdenetek a felvételt. Javítsátok ki a hibát a felületen, majd folytassátok onnan a forgatókönyvet. Ez teljesen rendben van, sőt, így a program több működése is látszik. Ügyeljetek arra, hogy a programbemutató (a forgatókönyv 1–9. pontja) ezzel együtt is beleférjen a 10 perces időkeretbe.
 
-**Bemenet** (input\_video.txt)
+**Bemenet** (`input_video.txt`)
 
 A fájl csak a térképet tartalmazza, **a program üres**:
 
-5 10  
-.\#..@..\#.@  
-.\#.\#\#.\#\#..  
-\>.@.@@.@.\#  
-\#\#.\#..\#.\#.  
-.@..\#..@..
+```text
+5 10
+.#..@..#.@
+.#.##.##..
+>.@.@@.@.#
+##.#..#.#.
+.@..#..@..
+```
 
 **A vizuális szerkesztőben az alábbi programot kell majd megszerkesztenek a lenti lépések sorrendjében:**
 
-set count to 0  
-set megy to true  
-while megy  
-  set arany to isThere 2  
-  if arany  
-    step forward 1  
-    mine here  
-    set count to count \+ 1  
-  else  
-    step forward 1  
-  set fal to isThere 1  
-  set megy to not fal  
+```minescript
+set count to 0
+set megy to true
+while megy
+  set arany to isThere 2
+  if arany
+    step forward 1
+    mine here
+    set count to count + 1
+  else
+    step forward 1
+  set fal to isThere 1
+  set megy to not fal
 print count
+```
 
 **A videó menete**
 
-1. **Indítás.** Indítsátok az alkalmazást parancssorból:   
-   robot.exe input\_video.txt output\_video.txt  
-2. **Áttekintés.** Mutassátok meg a térképet a robottal és a szenzort.  
-3. **Szerkesztés.** Állítsátok elő a fenti programot üres állapotból a blokkszerkesztővel az alábbi sorrendben, közben a szöveges nézetnek is követnie kell a változásokat. Az első lépéseknél még nem létező változókat használtok, a felületnek ezeket el kell fogadnia.  
-   1. while megy  
-   2. print count a while mögé  
-   3. if-else blokk arany feltétellel a while törzsébe  
-   4. step forward 1 az if és az else ágba is  
-   5. mine here az if ágban a step forward 1 mögé  
-   6. set count to count \+ 1 a mine here mögé  
-   7. set arany to isThere 2 az if-else elé  
-   8. set fal to isThere 1 az if-else mögé, ennek mögé set megy to not fal  
-   9. set megy to true a while elé, ennek elé set count to 0  
-4. **Futtatás nyomkövetés nélkül.** Látszódjon a robot végállapota, a felfedezett terület, a szenzor és a konzol. Nyissátok meg a naplófájlt.  
-5. **Futtatás nyomkövetés nélkül a programkód betöltésével.**  Lépjetek ki az alkalmazásból. Az input\_video.txt állományba vigyétek fel a programkódot, majd így indítsátok el a futtatást nyomkövetés nélkül. Látszódjon a robot végállapota, a felfedezett terület, a szenzor és a konzol. Nyissátok meg a naplófájlt.  
-6. **Nyomkövetés.** Indítsátok újra a programot. Lépegessetek végig a programon \- mutatva a változók tartalmát \- amíg az le nem áll. Közben több alkalommal is \- a program futásának végén is \- nyissátok meg a naplófájlt.   
-7. **Kézi vezérlés.** Indítsátok újra a programot. A nyomkövetés közben hagyjátok a robotot, amíg az első aranyrögig el nem jut. Kézzel bányásszátok ki az aranyrögöt, és irányítsátok el a robotot az összes aranyröghöz, amíg mindegyik aranyrögöt ki nem bányásztátok. A robot menjen falnak is időnként, ütközésnél hiba nélkül álljon meg.  
-8. **Ideiglenes módosítások.** Minden módosítás után futtassatok, mutassátok meg az eredményt, és csak utána töröljétek a beszúrt blokkot.  
-   1. Próbáljatok egy set blokk változónevének while\-t, majd 9lives\-t megadni.  
-   2. Szúrjatok be az if arany ág végére egy if true blokkot, abba print 1\-et. Próbáljatok az if true törzsébe még egy vezérlőblokkot tenni, ezt nem szabad engedni (max. 3 szintű struktúra). Futtatás után töröljétek az if true blokkot a tartalmával együtt.  
-   3. Szúrjatok be a program végére egy mine here blokkot. Futtatás közben hibaüzenetet kell látnunk. Ezután töröljétek a blokkot.  
-   4. Szúrjatok be a program végére egy while true blokkot, a törzsébe pedig egy print 1 blokkot. Futtatás közben a programnak magától le kell állnia, és a felületen látszódnia kell az utasításszám-limit túllépését jelző hibaüzenetnek (INSTRUCTION\_COUNT\_LIMIT\_EXCEEDED). Ezután töröljétek a while true blokkot a tartalmával együtt.  
-9. **Egyéb fontos funkciók ismertetése.** Ha van olyan működés, amit fontosnak tartotok bemutatni és a fenti forgatókönyvben nem jön elő, akkor azt illesszétek be a forgatókönyv végére\! Ezeket a fejlesztéseket is értékeljük.  
+1.  **Indítás.** Indítsátok az alkalmazást parancssorból:
+
+    ```sh
+    robot.exe input_video.txt output_video.txt
+    ```
+
+2.  **Áttekintés.** Mutassátok meg a térképet a robottal és a szenzort.
+
+3.  **Szerkesztés.** Állítsátok elő a fenti programot üres állapotból a blokkszerkesztővel az alábbi sorrendben, közben a szöveges nézetnek is követnie kell a változásokat. Az első lépéseknél még nem létező változókat használtok, a felületnek ezeket el kell fogadnia.
+
+    1.  `while megy`
+
+    2.  `print count` a `while` mögé
+
+    3.  `if-else` blokk `arany` feltétellel a `while` törzsébe
+
+    4.  `step forward 1` az `if` és az `else` ágba is
+
+    5.  `mine here` az `if` ágban a `step forward 1` mögé
+
+    6.  `set count to count + 1` a `mine here` mögé
+
+    7.  `set arany to isThere 2` az `if-else` elé
+
+    8.  `set fal to isThere 1` az `if-else` mögé, ennek mögé `set megy to not fal`
+
+    9.  `set megy to true` a `while` elé, ennek elé `set count to 0`
+
+4.  **Futtatás nyomkövetés nélkül.** Látszódjon a robot végállapota, a felfedezett terület, a szenzor és a konzol. Nyissátok meg a naplófájlt.
+
+5.  **Futtatás nyomkövetés nélkül a programkód betöltésével.** Lépjetek ki az alkalmazásból. Az `input_video.txt` állományba vigyétek fel a programkódot, majd így indítsátok el a futtatást nyomkövetés nélkül. Látszódjon a robot végállapota, a felfedezett terület, a szenzor és a konzol. Nyissátok meg a naplófájlt.
+
+6.  **Nyomkövetés.** Indítsátok újra a programot. Lépegessetek végig a programon - mutatva a változók tartalmát - amíg az le nem áll. Közben több alkalommal is - a program futásának végén is - nyissátok meg a naplófájlt.
+
+7.  **Kézi vezérlés.** Indítsátok újra a programot. A nyomkövetés közben hagyjátok a robotot, amíg az első aranyrögig el nem jut. Kézzel bányásszátok ki az aranyrögöt, és irányítsátok el a robotot az összes aranyröghöz, amíg mindegyik aranyrögöt ki nem bányásztátok. A robot menjen falnak is időnként, ütközésnél hiba nélkül álljon meg.
+
+8.  **Ideiglenes módosítások.** Minden módosítás után futtassatok, mutassátok meg az eredményt, és csak utána töröljétek a beszúrt blokkot.
+
+    1.  Próbáljatok egy `set` blokk változónevének `while`-t, majd `9lives`-t megadni.
+
+    2.  Szúrjatok be az `if arany` ág végére egy `if true` blokkot, abba `print 1`-et. Próbáljatok az `if true` törzsébe még egy vezérlőblokkot tenni, ezt nem szabad engedni (max. 3 szintű struktúra). Futtatás után töröljétek az `if true` blokkot a tartalmával együtt.
+
+    3.  Szúrjatok be a program végére egy `mine here` blokkot. Futtatás közben hibaüzenetet kell látnunk. Ezután töröljétek a blokkot.
+
+    4.  Szúrjatok be a program végére egy `while true` blokkot, a törzsébe pedig egy `print 1` blokkot. Futtatás közben a programnak magától le kell állnia, és a felületen látszódnia kell az utasításszám-limit túllépését jelző hibaüzenetnek (`INSTRUCTION_COUNT_LIMIT_EXCEEDED`). Ezután töröljétek a `while true` blokkot a tartalmával együtt.
+
+9.  **Egyéb fontos funkciók ismertetése.** Ha van olyan működés, amit fontosnak tartotok bemutatni és a fenti forgatókönyvben nem jön elő, akkor azt illesszétek be a forgatókönyv végére! Ezeket a fejlesztéseket is értékeljük.
+
 10. **Kihívást okozó programrészlet bemutatása**. Mutassátok be a program egy olyan részét, amelynek a megvalósítása kihívást jelentett számotokra, akár sikerült végül megoldani, akár nem. Térjetek ki arra, hogy mi okozta a nehézséget, milyen megoldási módokkal próbálkoztatok, és mit tanultatok belőle. Ezt a részt hangalámondással kísérjétek, mert a magyarázat nélkül nem követhető. **Ez a rész legfeljebb 5 perc lehet, és nem számít bele a programbemutató 10 perces időkeretébe.**
 
-[^1]:  Videó felvételéhez használhatjátok az OBS Studio nevű ingyenes alkalmazást.
+[^1]: Videó felvételéhez használhatjátok az OBS Studio nevű ingyenes alkalmazást.
 
-[^2]:  SFTP kliensnek Windowson használható a WinScp alkalmazás. Linuxon és MacOS-en elérhető az sftp parancs.
-
-[image1]: <data:image/png;base64,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>
-
-[image2]: <data:image/png;base64,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>
-
-[image3]: <data:image/png;base64,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>
-
-[image4]: <data:image/png;base64,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>
-
-[image5]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAM0AAAF/CAIAAABlq9r0AAAks0lEQVR4Xu2d/1Mc553n92/pXzK/BP1gybVllfZ80kbR6ipyqbxTUciV8amkxCecsPoWS0gFOq2qtKtdG+8u8togBxmRjcndGXst0GKMOZNxVgPyDKARFl8HIWBAgEYxE0uIOHNP99P9zNPPp6enZ+jp7pn+vOtV6Omnu59+Rs+L7gHm6f6zNAZT/PyZWIHBFCHoGcaJoGcYJ4KeYZwIeoZxIugZxomgZxgngp5hnEhuzz6/k6xuvosg2SCGiNKAmHm28vXTf/joXiL5FEHM+fuOmdW1DVEgLmae9Qw/hC0iiCFdkVVRIC5ZPSPnQ9gWgphAnBE10oKeIbaBnmWY6vzhxqO7BUB2hK0hPOiZSvyzv4ECWQdVM8dlz8LFCTxQToSTmdiiUQTVYJsIw03PyFCJTduUcP6q8Z5Z7JigGmwTYTjm2dpbPfNCpdhuoam6FBJqBM/qzpwD/REx82x9LlhZc72xvrZjTFefTqNnFnHMs5Xnzw8IlWK76XRQiWGZFlrGUvJiTRtbSwtsAxrBM0mSQH9ETDyD3WBBzyxim2c95/e++MrpS2dOS9uOy+1uJ4P77KUzx+kYnzpzOrDn1VP684rQLD+KwtCyRdUzurg+F1b+qpHrfDZP+kAOferMxYTiXPsH7dA89Kyo2ObZc/qRYwPZc2bXjFzIfT7Lw7OaNrrYpizm8izTGV4vKXCA3wY9Kyq2eUbYKsmpah5OKCO6e89eSmTxaVE9C57ooIssljzTf2OYeFZfiZ5tFjs9o9DxAxemted+3itsKbarDCRvGDeuKVKOJdcNPWtrqBUMyObZDwKScnJ9mpjoqjjYwW9j4hlJla4zmaBnFrHNM+VcJqdnVqzhF/ldxHbti/h7jdlhdnShVwxzz7IFPbOIbZ4VwNDQkNi0TRE9s0ABnkWjUfTMIm56NjY9NzIyIra+6RQgWcLo7wFiu/qQni/ER9Azi7jpmaco+I/olOkb/x22iTDQswwFq7bwn3ULK0nYIMJAz3Tcv/2/iW15MfOF/OtfxBz0DHGCQjwj6YqswrYQxJCPb62IAnEx8+xhaqPh41nYIoIIvP7xLLFFFIiLmWc0/aM4fxMxI/TV5uZvYjB2JYdnxNZ/61+E50kEYRBDqrP/BEBj5lk1/siJWMZctaye/ao/AdtCEBN+HVoUNdKS1TM8mSH5YnJKKyvPpj87Cn+V7zVgt8sGX3g2VegfLh3m4ehV2PnywGXPJmYSYcsZGByELVjhyYNBOKjOcPfOl+LL4DI4KE42LtezmpuehXN9xgvmyZMnsJ2cwOF3hoGBAfEFGGV8NMJ2Qc8yscuzP/7xj7p21+cMPoOfGlvSV5DBg02Zw4/9QsfLI0uiEBBJkmBlvug7np4bCxu8QP28dvQsk4I8yz3f6YI2rUgX4Fk4yxwTE6ABhvBuFcMzktClKrEKPRMrtGTzTJ3gocwTZovH3pc3VleZzkMRPFO/9U096zy5Q213jzoHWM7Ow0LH+LFn57OA1iW2Sigf3iav3Xu2jdbcOF/Jby+vUpog5V1aW/yBNtAzDts8q9A7JGmLz6mFPM5n9TV0Gltuz/gD3Ww+QAtv/XhL+4TuQPzYM8+erVEFYvCi8D7JhaXOZ195R63Z9jK/weUXvhPXLsR0FUPfcTnoGUx+niUW5f/654PquUT9BlfSb22eMPVsfa57XVlsOJSfZ6wglyte4rfhx555RvsWit5iqyQjz7YohePKuY2F30C3Qn9K03dcDnoGk6dnGpLxPGGrnqWVK2ZLQ21TfZW8YNmz5zNHnA8Em/lt+LEXfg64cfIvWqPqtCXeElamnn148LtxrhF+A8EtHn3H042H6Gk6WNMW5+vRM+MYekbHO9LTLkkBUtgdkLbuO00Kda/sZxuY38fFYqBnpNm65pBSlg8NFDf07NbFK/J1k2ycAurwZeoZrYlPjmws/U7aedR4Y20VQ+x6lqBnxjH0rAAePXokNm0hX0aGYFPm8GPvJGLXswQ9M45dnhXwe9qhobwlS7jnmZUX+AeS5VG2C3qWiV2eEe5OzoYtp+C/Oz1d1U0cd5KvYvh3JxmXPXOGUvk7evKr92DnywNfeEahn73xMrDPZYOPPENcpBDP7i0/hg0hiAnzD5+IGmnJ6lkaT2lIPpiczNLmnqXlRyOuVoN5oQgi8OmI2UMR0zk9w2BsSW7PoLwIIiBKA2Lm2S9aJ+BlGEEMee3ahCgQFzPPYFsIYoIoEJesnlXjD5tInphcQP3o2Wzs/8Bf0xeb6Z6fwp6UGehZhilX/ww6hX93ElKWnrkrGSX+ufzJ0LLETc/CFj6eVUAWFhYm7y3Bw5mzec8KeDlh/ROJy/iU5qZnq6s5flNccML5PxJl857BlxMN9c3RSTUsyah+OX1nJDMRBj3TpSDPcs9DsTGCZ3DGACQ/z+5/eLwr4wdF6MMJo6nn63PXBfH4Uxp6pot1zyITK1o5t2fqZCB5eNa1glCfXl8K8YvBylq2jdaMHHPPem4a9N/IM/FTuPFJza3cniUzneQ6jJ7B5OfZ4W3qWFYdVKeGK493ZWNsyTO1UHWJfE1FG8nXaOMRWklGSLeNNoTKKvHylM2z8ZvNkrSLr2Hwnq32v0anMPWe/6v9lztJ4UBAevXKhxtsalNuz9KHhPNZMryOnhklb886I+zslRnISOtLMbmQh2f0OdTrcXlI6iuDMS3rwDNiY8eYfPKjlSzZPOP1MnluNfGMm9T5nYxebJpdPp4Fg4fkf5LRJHpmlPw8U1iT5NATxhb9qgI9I1fKmqbMe2dtG/mqxGqqLvSxDWgseSbt4LcRPOudVMvUMObZ/kDenh1pkF8O6Sd6ZpgCPJOhYwkuTGuBYKuwpdhu9lzvaIsvyY+oZmGe1VeJJ7N0ds/ISVe5CcPTN4OBa3d0nbHomVb43d7z8vWUR+xEJqmWFvVB2zDoWX6edbY2Kicz/oShpEI+vRHaL58W5BPbtZBY0xFy/iKSUelO1BxRr0r6wN9rKF2RT7E/2inf3OdUq3hyNfeMFliZ0Hr2ZX5xw8wzs6Bn+XlWAOH8f7FpMdCznBj9vJkfhb2clA8mCSfc9SyhqFaMwAPlZPOebSiq5RVhnjB6pouNnnmHuekB6I2TPIi+AXtVNqBnGe7d+tf4J/8DGlBs1u7dKOMzGQU9Q5ygEM9eu4aTA5D8+EVr1ikCWT0jefUKntIQqxBbRIG4mHmWxqsnYg2TKyZNDs8wGFuCnmGcSA7PftbZFH/0AEHMIZ6I6uhj5llNVzNsEUEM+XlnsygQl6yenfrkPdgWgphw5tOsn1jJ6hleMZF8Mbl6omeIbXjas4HBAfETDpvL0J3b8CiIA3jUs4mluW+++UY8sB0htsHDIcWm6J5J23+mW5QktRD4a7gxI1zQZwYtBh4OKTZOe5apR8/8hG2efZeeqJZC6hlr8qPa/vukIG17+XvBn3xvm0SFE85ntz+VJw38svWfWT0FehYMHrnU1BZUEurrpvNQktGWYPBQw4UTlbUdyjbBZCoVDFY2RVPppRCd1Jkaa9PNYEHP3MA2z+KjLeTrfwtI117ZSgrPMJ8keVEpyDWCZxm9lgZe6fqKtWboGfnaXV+pLWbmCbNCn/qozpTsGdiGhR0FcQz7PHv0YP+VAeoNMSbjk3bdzObZ9/Z8n3LwSog1ZeCZcouDvgtV6qKRQ4JnTTXy2iNNMX6bNHrmBnZ6Js8721OvFqTtamUuz2A7ccueXa+v6ojKcjVdkM92TD7qGasRAg+HFBubPbutFTrua5WmntEaGrovBXqWR1Jj7HYb6JlHsNMzGynMM/lnBCVsUb9eDTwcUmw86ln09oh4VJuCv6d1BY96RrH9707R2Ag8CuIAnvYMKRvQM8QJ0DPECdAzxAns9+w3d74gGyCIgKiRlkI8M2kO4+eYiJG3ZyZtYXweEzfy9mxidUHY8q3/uF8NHjCL+AQy+swEOz3jt6nGu28gCtXK/TWK4tmxq+PweIhvOfHeeFE8wxukITwn3psoimfwSGXDdN+xKfBAYO8wPzcF++wF0DOrLCwnE/95Dt5d1mtMefJWt+iZVaZv/BgOqje5P94H++8unvYsHA7Dh6duMqTBcEEPGIDD6Qykt7Ozs+LL4PL0qfwfxe/iwVOadz0bm57jjmlzJmYW4BHNgQY4w5/+9Cex90bhVUPPslJ35pxQEy7oo9sWI5zSToGjQ3TDP/ov7aOiEGyiAw2tEbYpAKHnwWAwFA7Dj6SjZ5aQxOfbGXhGP/u/pMwx6a6vTMX76H83X08KLbWV5CudiVLbEWf70gKN4Bk8OgQaYAjvVjE805Jkc7po0DMV8p/+VmvH7u3qcznJYvWZxoAkHf4gTh/cSU4qdc0htj30jIYaQzxLGtUzn3SLqVhMPyed92wm0qUe/Y32xKIsx7XWZmiebvi18xnZrLX1nQN7/pytEjwjucw92Y5uzy+SnDt7lJYvX8msYuj6rUX4tkmjZwx+5G5e3n9TeQ4mq+fXUqBnQfmSEWWeqbXrc8FgJasXPEvFWlJZRsWwb5luzA4/dzIjfSKrZ38uaMGLwvtEvo5d/ithFdtgF7dX4IW/Y+UNI88qwctJo2c89NuXFKoqpN179jLoKmFj0bPUGLsypjnPWpRJ56xe8IwWgjUttMyS2zNSDrzEb8OPPff+7BZ9UWyVYZk+7fpwhbR3z18y+A1IIbPqx/LpjSH0/JD27FEh6Jmeia5jPSuJOx2739A9aTW3Z8r3MQn9bs6cz6hJWj307ESl8Xe/4dFZof/y/rr+zOPeE1k9o3zOHi9s4tnG6DurfCPcBleC3xlb0q1iCD2nL5ak9rru53H0TIV+37OBPLyTVdCaebm05yLbHnpWWJhwfATPIh+ck48eOAD7ydANP/f+jIatMiyrnnHbB144DzemaY+OsMoN4Fm2oGcFMrv0NXdMm3P/wRo8ojn82DvJ/fuZT3GZBD0rnIHBwXARMnjrFjxWTqABzrAyd1t8AUbhd0HPSpgpOx5s7QhfJZLrsP/ugp7lgfdVS831xn9bB3vuOkXxbHbZc99PiIvce/CkKJ7V/sqjn7ZDXOF022RRPMOnDSM8xIeieJbG+U6IRhHnO7Hg/E0/48T8TQyGTxE9e7thZmrsm5WlDcSfkNEnDlAZiuVZfPIxPDDiQ4gJ1BleDz6Fe0YshsdDfAvxoSiexcfxcolkIBfQongGj4T4HPQMcQJPeDYwMMA1b1sWFhZmppfg4RDncc4zSZJYgZUJYZs+N2sY0jjsCeI8znmmsfpfTw/yNeiZH3DOM3oOY5+CZ/XQM22mxZG0PDGuKdR4hH7Gn9Y2huQHIR5RJp6QVNVfp6u0feW9WNAzj+C0ZytLC9+vH+HroWc0lw7RCZhN7CGHNFSpI/p5TbXKpKZYSw23oRz0zCN4z7P1+IUO+QnADZpnQr2hZySHLoVYmQU98wie84yIRW9oQKVhngn10DNSaBkTp9CiZx7Bc56RzEX7rofEh5rTejol3TCxJt07Mxr0zCM451k2oGcFRPmJ4IJYi555Bvc9Gxke5dq2OeiZR3DfM8Ltka/CxQk8FuIKnvAMKXvQM8QJ0DPECdAzxAnQM8QJHPVsfnb93cZ7XEsYv8RRz67/30WuGYyP4qhnXBsYf8U1z6rxBhw+oFq5uUbaLc9QMv9AVXPBs3vLj2FvkDJmdqU499mDhvGe/QzvjuYzjl8dd8EzvGj6DTLi6NmmiESHxY+IcCFr4S4+BD3bFMPDw+wlZwvZBu7oN7zr2aXzuR+8CqEz9mC9LQgtDwwOstfL0tLSIlal04ODhTwWo5zwrmcVBekSCLbCSrsQPAsbfdwcTrhKg2dJ+RBPebYicQ9YlZQHr9LHSZPyj145vXubFNjXSBf5LRlkY2nbAbbLm80d5Ct9yifd5diZc3V7xOfSscO92dxO5O6YUP5ftktbyUEPHp9RVlWdbKQt8IdDz6zjIc/GO0+/G8k82ytzPpvore6cp2XmBFv1o9Y43wg9n/Wc39Uzq9aIuyRXnjvZm0jOE59+cPluYvFu1fu6FuiWxLOYtj07R6JnBeMhzwid79PTxrMJzrP+83ufz/pE2DX+OYoJzbOqiowQwDO5fHibWvliQK0n5YiiJvNM3X6i41SP+hRO9KxgvOUZhQ7nVu4MJG17FW5A6Dyzq125zDGoZzM3m3/whvpTnqFnrJLVS5JsMNsy45lck3mgO6tMGHkWi8WIZ+SrUI+eecmz2Tgd+Jj23PStAd4DOXWtvbQ8E+mSFz/QXfIS3M8Bsf52eYeKXWx3tk3s/cPqZhNdTK/284fJNqfeH6Zb8p7RN44vnmzlG0kYeZYt6JmXPLOMMN5u8WVkiL1e85At4e6+oiQ96+wJwUpXsPJ72qEhv0uWKFHPPAX+3ckK6BniBO549s4nc7ArSBnT3DPngmcksdkU7A1Slozck29K545nZ/9tEnYIKUvIWFNn2OgLKaJnJBvf/qkaPLERKTPIKNPhds0zjK/ipmdQf6TMYGPtjmfLXz/9aHAZXsuRMuPDgeWVr59SZ9joCymiZ/jzpn8Yjrv08+bb+Pszn/HOJ278/qwa/x7gM6pd+XsAeuY30DPECUrDs5v9eX4QaDE+DisR9ygNz36kfYrfIuP9F+m0JcQjeMuzujdan5c/qy3PQzl1cBf73Oy1N9TJJqfON1btDLAP7BNufiB/nLrjTmaiVELzbKskBbbvZ5XvvnE880HcxXjnxFqFJD1/foAsHt63wyOf0S1XvOWZOth35HmXWk0gwZ3PuHpZtRcrpH5lktK7B5/t12YVJBTP1C0X43RCFLejUpjoFWs883HwssRrnu3QCrrZR0aeyQVJm0uszBDOzIkinrF5UMKWVXsCM0nZs8PcnFC66tjBHRFOVsRGvOaZNj0poF7vgGfy6Y3VZzsD8e/PjLec6K3rN56ViRSD0vaMXf4i/V1v3sy8RYOe9V8+QC+11UHlEJxnuwPS1n2nSaHulcybOcRevOUZUq6gZ4gToGeIE6BniBO449nRljHYFaSMISPugmczD/D5Af7CnecHpPHS6Seq3XoeCg2q5geoZGkXPSNZe/zH41fHq8EkGaQMICNLxpeNtZueYfwT1zwjyp/7zdTsyjo82SJlABnZc+1T1e5eN6vxzZlvoKq54xnsDVLGUGfY6Asplmd170/BriBlTH37lAuelfFFc6rzh08fxjYe3S05SLfj3S/fi/wSvqjNU+3K353K1bMH0X+C41dywNe1eUres4GBAfHew3YEHign5EzGj1Z8fEhsdNMZHByAWuREbAWEdJXfnrwQ+Oo2SWl7Frb8pIh8E85fNd6zsTsRsUWbQjoGTTKBfB+KTRhlfDTCdkHPROzyrKWlTajZ2NiAhzOH98y+jrUINfl6JuweC3VnewIV28XvnsEJI3YNp+F/PX+gup3ioSHF8Ax2LJtnoU9/Ays3gGckJ0Cbab95JmnRLVaoz6jjV1GE4UyNtc3Jd9pKJ9flhSMN3WltqNiABYM1mcXUWH33HL+WT7aOHZYnKos9SZh7loweqpdPmeHuPrJQeUL+HwcdUxfpK6i6FOLXsmTzjPQHVm6gZ7ArkdaX+JtisIGMdZ6mkzHh0ArDyY8KKzcdye4ZWOTDH4g/nwWCzbQg9MfEM779Q1o53HCIXwW0q+QXWdCzzXqWUE8bmYcQZrJHfYywsL3JcFZpZfrfmk2svD2b6GKVQn8selZfqZbpN0DlJj2bfEf3HwVsE3ZPo2cMOn7QKlgjXp6UgSGJr2fKTaElZU2SLhp6dkRZoTahhT8Qe9p1Irn2rnYvD6E/Jp6ltc4EK+tZubYtqqxZV1cZeXbhkFrPInqmAQ2j8PumFa1pQkldvY886zgp30yFvvdRatZIoWK7fDcX+hBq+v3K7wKH08boureoPhtU7UbFs+SLfP8EDnPP7MomPcsWH3lWAMUbzvl59e4b1nHXs2yI+2cJembG5L3FhYUFdlAbE97c72k3LP+CNK8Q+5fv34YymWDFeNJVfhf0zNPE+47DYS5F4v/vJHx1mwQ9sxPhlFaKFONklkDPbGf601fJUJUu8BXZgjue4XNe/QY+5xUpOvicV8QJ8DmvSNHB57xiHI2jnr3dMMM1g/FRHPWMMPDFI2Ib4jec9gzxJ+gZ4gToGeIE6BniBOgZ4gToGeIE6BniBO55NtR+dQhUImWK057FZ7Uy59lYeITf5tZvdYtIGeCcZ98PSLQgSUpB80xdVEnRxas/2XHiowXYCFKiOOcZEaj29DnCvgrRs79+uVbYhqD3DyltHPVMV6N/f1YhSVeH1JMZUn4451mFqWe/e7vq9d+mVmbjkhRQe/bycdgIUqI45xlhpPdGJbBnfnRs3/f3jrGfD5Y2fvry4X/55Ydwd6R0cdQzxLegZ4gToGeIE6BniBOgZ4gToGeIE6BniBM47RnOd/Injnr2Ns7f9Gsc9YxrA+OvuObZ8u/l22Ih5Q0ZZTrc7nh2rh0f9eoX/lf7FHWGjb6QInqG9z/zD8Nxl+5/9jbez9FnvPOJG/dzrC7f+9MihlS7cn9a9MxvoGebYmBwMJwrg7duwR39Rhl61tkTgpW2ILQ8t/wH9nrNM7fyDWzNV3jXswrwdDorSNIOWGkX9DlijDB4pA177JyQcP5P8SkzvOVZ3c9fImPZ0S+vJYVTZ84R6CrlKXG7aFmuVB4gF1nU7U7qpW0H1F2UDV585WJmF6WROq1B1jItzNwZkI+wfT+t7Lgs7yhpD6UjhTc/GM7pWdroiZlp9MxTngnPE+bPZ1JAfnS1XNCeTEiH/9K+QL/yyERGINgqFyZ6haf+kq+08ZlIO32A5u7zXZ30cYs7VeG07WWbq7dLu8+oV0mmF3pWMB7yLEFPWtrzhJlnNy/vV+rV0M20Xdboo4YZ1LPD2zhHxV1IOXCz+YBS2NF5cgf178VtukMQz9TtJ7qqO1f4phjomXW85RmFDifzbLz/4ql+daT5DWQW7z6vnXUo1LN3f7wlot9Y75kqEyvI5YB6xRQ9W4w/9/NefhUDPbOOhzzrOLmjf4Jc0VbocL57cEvFvlfZ+6rOSJwW6FdWEBpRr5vaqoAkvRWRr5L8lj9QnllMCm8F5RK//e4KdVXGM2UVOeed2rdFOBz0THsotKgaeuYhz6wD9XIF6Fm2oGfoWeGMx+fZ6zXPRHwB7u4rStIz70BOVKurq+xVw5C1eDJLoGeIM7jj2dGWMdgVpIwhI+6CZzMPHsOuIGXM7MoTFzxL46XTT5Cxps6w0RdSRM/SqJo/oJKlXfQM46s46tn1Dxa5ZjA+iqOezc+u45R0f8ZRzxDfgp4hTlAUz2amHsMjIb4lPvm4KJ6RN2HwYIhvKdZ9qT7vWYEHQ3xLf+9qUTwj6epY+uTjZXhIxFf8x78v3/hoiTrD68FnU55hMHzQM4wTKZZn/9Q52/KZ3z9HilzpXfjnzlnqDK8Hn8I9O3Z1HB4S8S0n3hsvimevXZuAB0N8y4n3Jori2b3ldXgwxLdMLxXnc47wSB4n3l/3cPTqxqO7Xma6+6WF5STsfEmAnhHWNx59BcfVg8x/UQs6Xxp42jMrN7ITAhvJyVTnD+GIOoPYe6Oszt/md4H9Lwm865n1G9nxCeevmlueha3NaF9eXub3gv0vCbzrGRyGYDAYi8VgpVADmzJH8EySJEGIUEPl3j1/ybMx2Xax/5awWb4YvkD4ckj4vWD/SwKveAbvZiAMw1gspng2RsqNDZc6rvfRejgw+nZWnj8/AA/HY/18llGwOJ6ljV5OGj3LyzP5XjxKhEXlDmTybYLk7FHvwJgAnqXBGASDh2BlWn90dhR5cVa+JyPJsQ/kuw8xjM9n9zvZvuKqR9Sz39G1q9xaJc+oG3zaQxZ2nf0wNdqiW6UBX2Da6OWk0bN8PWPlmf6Lb96U7xjF6vm1FDgMdAxS8W56faGLcGD07WTOZ+wQwrEMPQuAqydbJTPZJu2s5ivZqssvfEfdoKJS2EtdpQFfYNro5aTRs7w862l+lX5Tk3KVcqcxlgQY+0R2z9hIFOzZVgue0QJJezhzfWSr+OsmrWSvhWRkSdyAhT8QfIFpo5eTRs/y8kxloutYz0riTsfuN3RvmyTLnqXT66RQ0yCf1bjKTPTtrMEbMgrHyuYZXMyUjTzj94IbQAxfII1Qz++lf3Ulg3Oese9punh4J6ugNfNyyfT9mcUYHpcvC3dPNvRM7ZkkbQmeF1bJGGnEdhE2EFdpWH+B/F7CqysVnPMsX6zfyI5PNBqFTZlj/edNe7Ho2bfffsvvBftfEnjXs4SFG9kJGRkZIXbCdsxxy7MNRbWNDbPbQczOzsrbcLvA/pcEnvbMGe7f/QQa4E2eLH8J+18SoGcyLp7SrPN46Wb8s7+BnS8J0LMM0z0/JcJ5k+m+Y7DDJURRPPtV/yI8EuJbrn2+WBTP8B56CE+x7oOcRtUQjSLeN5Sm9/ZDcgzEz/TFHlIZiugZBsNSRM+IzsPxFDyRIj6BjH51Ue+DTHLn/h/ggREfErv/B+oMrwefwj2rxh8CEI7qIv28+cXd38ODIb7lt6OPiuIZPFJ5MP3ZUfibemfAvwf4xbMpt/8GSjoAe1UqeN2zSHQ4bGtIg/AoVnjyYBCOfb7kNfE5cW+E3/fJgxwTt7yMpz0bHh7mDmtbSLPwWDmB0uRLAS8nXBYfPkt42bOBwUHumDZncPAWPKI50Ju8GBwcEPrQ3VgPpwIINWtra3wjsFelglc8kyzMQ7Ex8lWJP3rFYdglAaiOCcJUgA2jT2kHg1VCTRp4li6LyQEJZz1bI//7u4Ovshqy+Nyel9iqU2fO1TWH2FqDgTlU2xcK0xlBoe7rweARUjnWURusqrlQe6SmKSpvEwym1lPByppQMp2KNqWUHeeu1+oa0ntGjitJz5KvrFdQ+oTes3Nnj1KZBiczb6HI4padLyhleQox2ebc2deyedbW0kK62tLSkk6NdXRcb2u6EKyUO4meZVKYZ8LgSVKAr4dDa+RZA/nacMh4/qZcSMXm1pWF9TjxDG7Dku18xroB+8OPN1kbmlQLrIYWAsG/4xcZBi9HmU9Psp5KtijaKZViV/lGhC6VEI56RtIZWSHl6m10SQ1dK2xvMDA1beRrYxbPlCyFluR/1ue6qWfdF6qIfDF6WuOS1bPAAVp4MSD2hx9vSdPoRs0zqUd3Vz892hpVT2x0FduAYfByFM+q+O8T8eXI4RsRulRCOOcZpf3krrcia9cObono6wv2jFx2yBudS/W1bJxIjjT2hRXP2GZCsnqmdSMA+sOPt+DZxmTb/ss9/CrrnsXJdf/QiUql20ql2Fu+EaFLJYRznj23T35nRgZgRlkkhciEfIsNOrTV26XdB0+bvz+znmij/NaNJnhCtlOI6Jny7pAWrvXHZ+70Qu/58RY9U2pWH929GPzu4H15cZckVdWYvT+zHvRMhG0AD1MAX0aGuGNaTUvjJXJKGEuqb9OCwUphAxrSODyiOfx4F8BQpJBf0ySTSb4R2KtSwbueJYr2e9qhobwlS2zasw38PW2WuO9Zwkt/d3q6qvsrUGHk9Xen2alhft+nD2/DXpUKXvfMO+Df0TcDepYH033H4Cd2nAE/F2Tg2cDE1/BIiG+5OfF1UTzDz20jPMX63PY369+O4jwURCE2m3r89NuieEaD8+p8TrHm1R29cUXcFINRYqdn79zqFjfFYJTY6RmhL36brEUQiKiRlkI8QxBD0DPECdAzxAkK8eweaAVBzFn4Wr0RGkxWz9J4SkPyweRkljb3jOTTqWH4MwWCCPRO5/jUXQ7PMBhbktuz1z+uRhBzRGlAzDy73P2Lxd/PIIgV3up+TRSIS1bPVtYWYFsIYgJxRtRIS1bPyMkQNoQgJphcQNEzxDbQM8QJvOiZOL/MpsADIY7hkGddvV2w0pBwofcHyBlUzUUc8kySvgsrlfpnhBrxYIUG3hCFBHYAcQb7PHtwc1H2RvrJ3/6S1pw6e3Lx9zFSI5f/9h+1mnFSE30gb1B39qR8A5WzJ+9x7YgHS6fXk3O19RfU8lL8QkMjLcdiMb5Avibj4aa2DroZ8YxtwCL2GXEK+zyb+o0k/RdSuNN1cuv/lFUjDvXPqWvp+YwZRuVTCjnOZ9frK+ktWZSsLykLwi2chMXK+uv8Ih/hWIhj2OkZK1ONmExKWfWMLp7aadUzXpdYk3q3qY4TZp4FgzX8Ih/hWIhj2OkZu/wVybP1OXWeCxALPfM6dnpGNfrXg8/85MPIolXPMttQxIMpxsg5Ib/xosUmenfQdFJdZeTZEa2ej3AsxDHs9EysKQjxYLYGHg5xBs95NjRUyG0crSQajcLDIc5gn2c2MR4fHRkZEQ+56ZA2J2ZG4eEQZ/CcZ0hZgp4hToCeIU5QiGckobv/DttCEEM+/0r+nVS2mHn29TcPf/3F67BFBBH4degfiC2iQFzMPKMZmul/HcxvQRDG8L2QKA1Ibs8wmM0HPcM4EfQM40TQM4wTQc8wTgQ9wzgR9AzjRNAzjBNBzzBO5P8DgYGJtTsEkwsAAAAASUVORK5CYII=>
+[^2]: SFTP kliensnek Windowson használható a WinScp alkalmazás. Linuxon és MacOS-en elérhető az sftp parancs.
